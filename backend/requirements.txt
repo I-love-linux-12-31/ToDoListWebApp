@@ -1,0 +1,9 @@
+Flask
+flask-login
+SQLAlchemy
+PyYAML
+user-agents
+Werkzeug
+dotenv
+flask_swagger_ui
+psycopg2
