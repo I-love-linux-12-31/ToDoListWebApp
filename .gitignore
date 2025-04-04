@@ -1,0 +1,9 @@
+.venv
+.venv3_14t
+.idea
+
+.env
+
+# fix for jetbrains autocomplete
+./db.py
+./ORM
