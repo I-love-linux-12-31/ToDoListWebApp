@@ -5,5 +5,5 @@
 .env
 
 # fix for jetbrains autocomplete
-./db.py
-./ORM
+/db.py
+/ORM
