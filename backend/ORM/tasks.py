@@ -1,7 +1,5 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, DateTime, Enum, VARCHAR
-from sqlalchemy.orm import relationship
-from flask_login import UserMixin
 
 import enum
 
@@ -17,12 +15,13 @@ class TaskStatus(enum.Enum):
 
 class TaskShareLevel(enum.Enum):
     PARENT_SELECT = 0
+    PRIVATE = 128
 
-    R_ALL = 128
+    R_ALL = 127
     R_ONLY_1_LEVELS = 1
     R_ONLY_2_LEVELS = 2
 
-    RW_ALL = -128
+    RW_ALL = -127
     RW_ONLY_1_LEVELS = -1
     RW_ONLY_2_LEVELS = -2
 

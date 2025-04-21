@@ -1,6 +1,5 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, DateTime, Enum, VARCHAR
-from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 
 from db import SqlAlchemyBase
