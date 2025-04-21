@@ -1,6 +1,5 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, DateTime, Enum, CHAR
-from sqlalchemy.orm import relationship
 import enum
 
 from db import SqlAlchemyBase
@@ -27,6 +26,26 @@ class TokensAccessLevels(enum.Enum):
                 return TokensAccessLevels.EVERYTHING_ADMIN
             case _:
                 return TokensAccessLevels.READONLY
+
+    @staticmethod
+    def id_by_level(level: TokensAccessLevels):
+        match level:
+            case TokensAccessLevels.READONLY:
+                return 0
+            case TokensAccessLevels.READ_UPDATE:
+                return 1
+            case TokensAccessLevels.READ_CREATE:
+                return 2
+            case TokensAccessLevels.EVERYTHING_USER:
+                return 3
+            case TokensAccessLevels.EVERYTHING_ADMIN:
+                return 4
+
+    def __gt__(self, other):
+        return self.id_by_level(self) > other.id_by_level(other)
+
+    def __lt__(self, other):
+        return self.id_by_level(self) < other.id_by_level(other)
 
 
 class AuthToken(SqlAlchemyBase):
