@@ -1,0 +1,38 @@
+import os
+
+from flask_swagger_ui import get_swaggerui_blueprint
+
+if os.environ.get("DOTENV", False):
+    from dotenv import load_dotenv
+    load_dotenv()
+
+
+from flask import Flask
+from db import global_init, create_session
+
+from decorators import token_auth
+
+from api import bp as api_bp
+
+URL_PREFIX = os.environ.get('URL_PREFIX', '')
+
+app = Flask(__name__, static_url_path=F"{URL_PREFIX}/static")
+app.register_blueprint(api_bp)
+
+
+SWAGGER_URL = F"{URL_PREFIX}/api/v1/docs"
+API_URL = F"{URL_PREFIX}/static/openapi.yaml"
+
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={"app_name": "ToDo list service API",}
+)
+app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+
+
+global_init()
+
+if __name__ == '__main__':
+    session = create_session()
+    app.run()

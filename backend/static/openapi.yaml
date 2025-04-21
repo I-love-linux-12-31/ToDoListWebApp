@@ -1,0 +1,564 @@
+openapi: 3.0.3
+info:
+  title: ToDo List Web App API
+  description: API for a ToDo List web application with user and task management
+  version: 1.0.0
+
+servers:
+  - url: '{protocol}://{host}{basePath}'
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: http
+      host:
+        default: localhost:5000
+      basePath:
+        default: /api/v1
+
+components:
+  securitySchemes:
+    TokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: API Key token in format "Token <api-key>"
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          maxLength: 64
+        email:
+          type: string
+          format: email
+          maxLength: 120
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_admin:
+          type: boolean
+          default: false
+      required:
+        - username
+        - email
+
+    UserCreate:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 64
+        email:
+          type: string
+          format: email
+          maxLength: 120
+        password:
+          type: string
+          format: password
+          minLength: 8
+        is_admin:
+          type: boolean
+          default: false
+      required:
+        - username
+        - email
+        - password
+
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 64
+        email:
+          type: string
+          format: email
+          maxLength: 120
+        password:
+          type: string
+          format: password
+          minLength: 8
+        is_admin:
+          type: boolean
+      
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        owner_id:
+          type: integer
+          readOnly: true
+        parent:
+          type: integer
+          nullable: true
+        title:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 512
+          nullable: true
+        status:
+          type: string
+          enum: [DONE, PENDING, NONE, CANCELLED]
+          default: NONE
+        access_politics:
+          type: string
+          enum: [PARENT_SELECT, PRIVATE, R_ALL, R_ONLY_1_LEVELS, R_ONLY_2_LEVELS, RW_ALL, RW_ONLY_1_LEVELS, RW_ONLY_2_LEVELS]
+          default: PRIVATE
+        creation_date:
+          type: string
+          format: date-time
+          readOnly: true
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - title
+
+    TaskCreate:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 512
+          nullable: true
+        status:
+          type: string
+          enum: [DONE, PENDING, NONE, CANCELLED]
+          default: NONE
+        access_politics:
+          type: string
+          enum: [PARENT_SELECT, PRIVATE, R_ALL, R_ONLY_1_LEVELS, R_ONLY_2_LEVELS, RW_ALL, RW_ONLY_1_LEVELS, RW_ONLY_2_LEVELS]
+          default: PRIVATE
+        parent:
+          type: integer
+          nullable: true
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - title
+
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 512
+          nullable: true
+        status:
+          type: string
+          enum: [DONE, PENDING, NONE, CANCELLED]
+        access_politics:
+          type: string
+          enum: [PARENT_SELECT, PRIVATE, R_ALL, R_ONLY_1_LEVELS, R_ONLY_2_LEVELS, RW_ALL, RW_ONLY_1_LEVELS, RW_ONLY_2_LEVELS]
+        parent:
+          type: integer
+          nullable: true
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+
+paths:
+  /users:
+    get:
+      summary: Get user list or current user
+      description: |
+        Returns a list of all users if the caller is an admin.
+        For regular users, returns only the current user's information.
+      security:
+        - TokenAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+      tags:
+        - users
+
+    post:
+      summary: Create a new user
+      description: Create a new user (admin only)
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input or username/email already exists
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - admin access required
+      tags:
+        - users
+
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: User ID
+
+    get:
+      summary: Get a specific user
+      description: |
+        Returns a specific user by ID.
+        Regular users can only access their own information, admins can access any user.
+      security:
+        - TokenAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+      tags:
+        - users
+
+    put:
+      summary: Update a user
+      description: |
+        Updates a user's information.
+        Regular users can only update their own data, admins can update any user.
+        Only admins can change the is_admin status.
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input or username/email already exists
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+      tags:
+        - users
+
+    delete:
+      summary: Delete a user
+      description: Delete a user (admin only)
+      security:
+        - TokenAuth: []
+      responses:
+        '204':
+          description: User deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - admin access required
+        '404':
+          description: User not found
+      tags:
+        - users
+
+  /tasks:
+    get:
+      summary: List tasks
+      description: |
+        Returns a list of tasks based on the user's permissions:
+        - Anonymous users can only see shared tasks (read-only)
+        - Authenticated users can see their own tasks and shared tasks they have access to
+      security:
+        - TokenAuth: []
+        - {}  # Allow anonymous access
+      parameters:
+        - name: filter_user
+          in: query
+          schema:
+            type: integer
+          description: Filter tasks by user ID (admin only)
+        - name: filter_status
+          in: query
+          schema:
+            type: string
+            enum: [DONE, PENDING, NONE, CANCELLED]
+          description: Filter tasks by status
+        - name: filter_search
+          in: query
+          schema:
+            type: string
+          description: Search in task title and description
+        - name: write_permission_required
+          in: query
+          schema:
+            type: boolean
+          description: Filter tasks by write permission
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+      tags:
+        - tasks
+
+    post:
+      summary: Create a new task
+      description: Create a new task (requires READ_CREATE access level or higher)
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - insufficient permissions
+      tags:
+        - tasks
+
+  /tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Task ID
+
+    get:
+      summary: Get a specific task
+      description: |
+        Returns a specific task by ID based on permissions:
+        - Anonymous users can only see shared tasks
+        - Users can see their own tasks and shared tasks they have access to
+      security:
+        - TokenAuth: []
+        - {}  # Allow anonymous access
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Forbidden - insufficient permissions
+        '404':
+          description: Task not found
+      tags:
+        - tasks
+
+    put:
+      summary: Update a task
+      description: |
+        Updates a task.
+        Users can modify their own tasks and shared tasks with write access.
+        Only owners and admins can change access politics.
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - insufficient permissions
+        '404':
+          description: Task not found
+      tags:
+        - tasks
+
+    delete:
+      summary: Delete a task
+      description: |
+        Deletes a task.
+        Only the task owner or an admin can delete a task.
+      security:
+        - TokenAuth: []
+      responses:
+        '204':
+          description: Task deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - insufficient permissions
+        '404':
+          description: Task not found
+      tags:
+        - tasks
+
+  /token/create:
+    post:
+      summary: Create authentication token
+      description: |
+        Create a new authentication token with specified access level.
+        To get admin access level, the user must have admin status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                token_access_level:
+                  type: integer
+                  enum: [0, 1, 2, 3, 4]
+                  description: |
+                    0 = READONLY
+                    1 = READ_UPDATE
+                    2 = READ_CREATE
+                    3 = EVERYTHING_USER
+                    4 = EVERYTHING_ADMIN (admin only)
+                duration:
+                  type: integer
+                  description: Token validity in days (max 120)
+                  default: 30
+              required:
+                - username
+                - password
+      responses:
+        '201':
+          description: Token created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  access_level:
+                    type: integer
+                  valid_until:
+                    type: string
+                    format: date-time
+                  user_id:
+                    type: integer
+        '400':
+          description: Bad request
+        '403':
+          description: Access denied
+      tags:
+        - auth
+
+  /token/revoke:
+    delete:
+      summary: Revoke authentication token
+      description: Revoke an existing authentication token
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                token:
+                  type: string
+              required:
+                - token
+      responses:
+        '204':
+          description: Token revoked
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+      tags:
+        - auth 
