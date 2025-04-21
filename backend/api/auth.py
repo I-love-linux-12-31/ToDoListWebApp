@@ -10,9 +10,9 @@ from decorators import token_auth
 from ORM.users import User
 from ORM.authtokens import AuthToken, TokensAccessLevels
 
-bp = Blueprint('api', __name__)
+bp = Blueprint('auth', __name__)
 
-@bp.route('token/create', methods=['POST'])
+@bp.route('/token/create', methods=['POST'])
 @token_auth(allow_anonymous=True)
 def create_token(session=None, **kwargs):
     request_data = request.get_json()
@@ -42,17 +42,22 @@ def create_token(session=None, **kwargs):
     session.commit()
     session.close()
 
-    return Response(token_serialized, 201)
+    res = jsonify(token_serialized)
+    res.status_code = 201
+    return res
     # password_hash = generate_password_hash
 
 @bp.route('token/revoke', methods=['DELETE'])
 @token_auth(allow_anonymous=False)
-def revoke_token(session=None, token_status:TokensAccessLevels=None):
+def revoke_token(session=None, token_status:TokensAccessLevels=None, **kwargs):
     if token_status is None or token_status < TokensAccessLevels.EVERYTHING_USER:
         return Response('Access denied!', 403)
     request_data = request.get_json()
     username = request_data.get('username', None)
-    token = request.headers.get('token').split()[1]
+    token = request_data.get('token', None)
+    if token is None:
+        return Response("Bad request!, token in request body is missing", 400)
+    token = token.split()[1]
     if session is None:
         session = create_session()
 
