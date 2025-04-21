@@ -1,14 +1,17 @@
 from ORM.authtokens import TokensAccessLevels, AuthToken
 from flask import request, Response
+import functools
 
 from db import create_session
 
 def token_auth(allow_anonymous=False):
     def decorator(func, *args, **kwargs):
+        @functools.wraps(func)
         def check_token_auth(*args2, **kwargs2):
             if "token_status" in kwargs or "token_status" in kwargs2:
                 return Response("Bad request!", 400)
             token_status = None
+            user_id = None
             token: str = request.headers.get("Authorization")
             if not allow_anonymous and not token:
                 return Response("Unauthorized", 401)
@@ -30,9 +33,10 @@ def token_auth(allow_anonymous=False):
                 if token:
                     print("[DBG] Auth passed:", token)
                     token_status = token.access_level
+                    user_id = token.user_id
                 else:
                     return Response("Unauthorized: bad token!", 401)
 
-            return func(*args2, token_status=token_status, session=session,**kwargs2)
+            return func(*args2, token_status=token_status, user_id=user_id, session=session,**kwargs2)
         return check_token_auth
     return decorator
