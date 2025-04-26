@@ -5,6 +5,10 @@ import enum
 from db import SqlAlchemyBase
 
 class TokensAccessLevels(enum.Enum):
+    """
+    Token access levels enum.
+    """
+
     READONLY = 0
     READ_UPDATE = 1
     READ_CREATE = 2
@@ -28,7 +32,7 @@ class TokensAccessLevels(enum.Enum):
                 return TokensAccessLevels.READONLY
 
     @staticmethod
-    def id_by_level(level: TokensAccessLevels):
+    def id_by_level(level):
         match level:
             case TokensAccessLevels.READONLY:
                 return 0
@@ -49,14 +53,18 @@ class TokensAccessLevels(enum.Enum):
 
 
 class AuthToken(SqlAlchemyBase):
-    __tablename__ = 'auth_tokens'
+    """
+    Auth token class.
+    """
+
+    __tablename__ = "auth_tokens"
     id = Column(CHAR(64), primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey("users.id"))
     valid_until = Column(DateTime)
     access_level = Column(Enum(TokensAccessLevels), default=TokensAccessLevels.READONLY)
 
     def __str__(self):
-        return f'Auth token {self.id} owned by {self.user_id}. Valid until {self.valid_until}.'
+        return f"Auth token {self.id} owned by {self.user_id}. Valid until {self.valid_until}."
 
     def serialize_from_object(self):
         return {
@@ -65,4 +73,3 @@ class AuthToken(SqlAlchemyBase):
             "valid_until": self.valid_until.isoformat(),
             "user_id": self.user_id,
         }
-
