@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from db import create_session
+from datetime import datetime, UTC
 
 from tasks import get_user_tasks
 from ORM import User, Task
@@ -35,8 +36,8 @@ def todo_list():
     session_db = create_session()
     user = session_db.query(User).get(session['user_id'])
 
-    tasks = get_user_tasks(user.id, session_db, short_response=False, write_permission_required=True)
+    tasks = get_user_tasks(user.id, session_db, short_response=False, write_permission_required=False)
 
     tree = build_task_tree(tasks)
 
-    return render_template('webapp/todo.html', tasks=tree, user=user)
+    return render_template('webapp/todo.html', tasks=tree, user=user, current_date=datetime.now(UTC))

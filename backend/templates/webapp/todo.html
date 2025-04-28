@@ -5,8 +5,19 @@
     <h2>To-Do List</h2>
 
     {% macro render_task(task, level=1) %}
-        <li>
-            {{ task["title"] }}
+
+        {% set is_readonly = not task["writable"] %}
+        {% set is_today_deadline = (task["deadline"] and task["deadline"].date() == current_date.date()) %}
+
+
+        <li class="{% if is_today_deadline %}bg-warning{% endif %}" style="padding: 5px; margin-bottom: 5px; border-radius: 5px;">
+            <span {% if is_readonly %}class="text-muted"{% endif %}>
+                {{ task["title"] }}
+                {% if is_readonly %}
+                    <span title="Read Only">🔒</span>
+                {% endif %}
+            </span>
+
             {% if task.get("children") %}
                 <ul>
                     {% for child in task["children"] %}
