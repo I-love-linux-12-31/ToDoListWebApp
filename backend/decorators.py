@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from ORM.authtokens import TokensAccessLevels, AuthToken
 from flask import request, Response
 import functools
@@ -30,13 +32,14 @@ def token_auth(allow_anonymous=False):
             if token_type == "Token":
                 # print(token)
                 token: AuthToken = session.query(AuthToken).get(token)
-                if token:
+                if token and token.valid_until >= datetime.now():
                     print("[DBG] Auth passed:", token)
                     token_status = token.access_level
                     user_id = token.user_id
                 else:
                     return Response("Unauthorized: bad token!", 401)
-
+            else:
+                return Response("Unauthorized: bad token type!", 401)
             return func(*args2, token_status=token_status, user_id=user_id, session=session,**kwargs2)
         return check_token_auth
     return decorator
