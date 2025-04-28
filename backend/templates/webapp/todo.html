@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>To-Do List</h2>
+
+    {% macro render_task(task, level=1) %}
+        <li>
+            {{ task["title"] }}
+            {% if task.get("children") %}
+                <ul>
+                    {% for child in task["children"] %}
+                        {{ render_task(child, level + 1) }}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </li>
+    {% endmacro %}
+
+    <ul>
+        {% for task in tasks %}
+            {{ render_task(task) }}
+        {% endfor %}
+    </ul>
+
+</div>
+{% endblock %}

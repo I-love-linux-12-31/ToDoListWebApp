@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Token Management</h2>
+
+        <form method="post" id="token-creation-form">
+            <input type="hidden" name="action" value="create" required="required" class="form-control">
+            <label>
+                <div>Valid until</div>
+                <input type="date" name="valid_until">
+            </label>
+            <label>
+                <div>Access level id:</div>
+                <input type="number" name="access_level" list="access_levels" max="{% if is_admin %}4{% else %}3{% endif %}" min="0" value="" required="required" class="form-control" />
+
+                <datalist id="access_levels">
+                    <option value="0">READONLY: 0</option>
+                    <option value="1">READ_UPDATE: 1</option>
+                    <option value="2">READ_CREATE: 2</option>
+                    <option value="3">EVERYTHING_USER: 3</option>
+                    {% if is_admin %}
+                    <option value="4">EVERYTHING_ADMIN: 4</option>
+                    {% endif %}
+                </datalist>
+            </label>
+
+            <button type="submit" class="btn btn-primary">Create New Token</button>
+        </form>
+
+    <h3>Your current token</h3>
+    {% for token in tokens %}
+        <div class="card" style="padding: 16px;">
+            <code>{{ token["id"] }}</code>
+            <p>Access mode: {{ token["access_level"] }}</p>
+            <p>Valid until: {{ token["valid_until"] }}</p>
+            <a class="btn btn-danger" style="display: inline-block" href="{{ url_for("webapp.token.revoke", token_id=token["id"]) }}">Revoke</a>
+        </div>
+    {% endfor %}
+
+
+</div>
+{% endblock %}
