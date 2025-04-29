@@ -1,5 +1,4 @@
 from datetime import datetime
-from tkinter import READABLE
 
 from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, DateTime, Enum, VARCHAR, Sequence
 
