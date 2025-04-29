@@ -30,6 +30,8 @@ services:
       - static:/static
     networks:
       - app_network
+    depends_on:
+      - backend
 networks:
   app_network:
     driver: bridge
