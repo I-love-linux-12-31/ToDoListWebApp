@@ -27,3 +27,16 @@
 #token-creation-form button {
     max-width: 256px;
 }
+
+.todo-li {
+    background: rgba(211, 211, 211, 0.35);
+    border-radius: 8px;
+    border: solid lightgray 1px;
+    border-left: solid darkgray 6px;
+}
+
+.todo-ul {
+    padding-left: 8px;
+    list-style-type: none;
+}
+
