@@ -139,7 +139,10 @@ def share_task(task_id):
     if request.method == "POST":
 
         share_level = request.form.get('access_level')
-        if not share_level.isdigit():
+        bad_level = True
+        if share_level.isdigit() or share_level.startswith("-") and share_level[1:].isdigit():
+            bad_level = False
+        if bad_level:
             flash('Unacceptable access level. id required.', 'danger')
             return redirect(url_for('webapp.todo.todo_list'))
         share_level = TaskShareLevel.int2level(int(share_level))
