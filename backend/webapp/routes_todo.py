@@ -30,7 +30,7 @@ def build_task_tree(tasks):
     return tree
 
 
-@bp_todo.route("/", methods=["GET"])
+@bp_todo.route("/", methods=["GET", "POST"])
 def todo_list():
     if "user_id" not in session:
         flash('Please login first.', 'warning')
@@ -38,6 +38,36 @@ def todo_list():
 
     session_db = create_session()
     user = session_db.query(User).get(session['user_id'])
+
+    if request.method == "POST":
+        form = request.form
+        if all([key in form for key in ["title", "description", "status", "task_id"]]):
+            is_data_valid = False
+            try:
+                task_id = int(form["task_id"])
+                description = form["description"]
+                status = form["status"].upper()
+                title = form["title"]
+                is_data_valid = True
+            except Exception as e:
+                print(e)
+                flash('Please enter a valid data.', 'warning')
+            if is_data_valid:
+                task = session_db.query(Task).get(task_id)
+                task: Task
+                if task.owner_id == user.id or task.writable():
+                    task.title = title
+                    task.description = description
+                    task.status = status
+                    try:
+                        session_db.add(task)
+                        session_db.commit()
+                    except Exception as e:
+                        print(e)
+                        flash('Failed to update task. Something went wrong.', 'danger')
+
+                else:
+                    flash('Access denied.', 'warning')
 
     tasks = get_user_tasks(user.id, session_db, short_response=False, write_permission_required=False)
 

@@ -10,16 +10,64 @@
 
         <li class="{% if is_today_deadline %}bg-warning{% endif %} todo-li" style="padding: 5px 0 5px 5px;margin-bottom: 5px; border-radius: 5px;">
             <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span {% if is_readonly %}class="text-muted"{% endif %}>
-                        {{ task["title"] }}
-                        {% if is_readonly %}
-                            <span title="Read Only">🔒</span>
-                        {% endif %}
-                    </span>
+                <div style="width: 80%;">
+                    {% if not is_readonly %}
+                        <form method="post">
+                            <input type="hidden" name="task_id" value="{{ task["id"] }}">
+                            <div style="width: 100%; display: flex; align-content: space-around; ">
+                                <label class="form-label" style="width: 49%;">
+                                    <input type="text" name="title" class="form-control" required value="{{ task["title"] }}" placeholder="Title">
+                                </label>
+
+    {#                        <label class="form-label" style="margin-left: 32px;">
+                                <input type="text" name="status" list="task_statuses" class="form-control" required value="{{ task["status"] }}" placeholder="Status">
+                            </label>
+
+                            <datalist id="task_statuses">
+                                <option value="128">Private: 128</option>
+                                <option value="127">Read for all: 127</option>
+                                <option value="2">Read for this and nearest children: 2</option>
+                                <option value="1">Read-only: 1</option>
+
+                                <option value="-127">Read and write for all: -127</option>
+                                <option value="-2">Read and write for this and nearest children: -2</option>
+                                <option value="-1">Read and write: -1</option>
+
+                            </datalist>#}
+
+                                <label for="status" hidden="hidden">Example select</label>
+                                <select class="form-control" id="status" name="status" style="display: inline-block; height: 100%; margin-left: 16px;">
+                                  <option {% if task["status"] == "DONE" %}selected{% endif %}>Done</option>
+                                  <option {% if task["status"] == "PENDING" %}selected{% endif %}>Pending</option>
+                                  <option {% if task["status"] == "NONE" %}selected{% endif %}>None</option>
+                                  <option {% if task["status"] == "CANCELLED" %}selected{% endif %}>Canceled</option>
+                                </select>
+
+                                <button type="submit" class="btn btn-primary" style="height: 100%; margin-left: 16px;">Save</button>
+                            </div>
+
+
+                            <br>
+                            <label class="form-label" style="width: calc(100%); ">
+                                <textarea name="description" class="form-control" rows="3">{{ task["description"] }}</textarea>
+                            </label>
+
+    {#                        <label class="form-label" style="margin-left: 16px;">
+                                <input type="text" name="description" class="form-control" required value="{{ task["description"] }}" placeholder="Description">
+                            </label>#}
+
+                        </form>
+                    {% else %}
+                        <span {% if is_readonly %}class="text-muted"{% endif %}>
+                            {{ task["title"] }}
+                            {% if is_readonly %}
+                                <span title="Read Only">🔒</span>
+                            {% endif %}
+                        </span>
+                    {% endif %}
                 </div>
 
-                <div>
+                <div style="margin-right: 16px;">
                     {% if not is_readonly %}
                         <a href="{{ url_for('webapp.todo.add_task', parent_id=task['id']) }}" class="btn btn-sm btn-success">Add</a>
                         <a href="{{ url_for('webapp.todo.delete_task', task_id=task['id']) }}" class="btn btn-sm btn-danger">Delete</a>
