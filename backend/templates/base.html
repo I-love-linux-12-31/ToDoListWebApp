@@ -12,7 +12,7 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="\{\{ url_for('index') \}\}">To-do list web app</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">To-do list web app</a>
             <div class="navbar-nav ms-auto">
                 {% if session.get("user_id", None) or (session.get("user_id", "None") == 0) %}
                     <a class="nav-link" href="{{ url_for('webapp.auth.logout') }}">Logout</a>

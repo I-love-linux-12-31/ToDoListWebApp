@@ -7,7 +7,7 @@ if os.environ.get("DOTENV", False):
     load_dotenv()
 
 
-from flask import Flask, get_flashed_messages
+from flask import Flask, get_flashed_messages, redirect, url_for
 from db import global_init, create_session
 
 from decorators import token_auth
@@ -34,6 +34,11 @@ swaggerui_blueprint = get_swaggerui_blueprint(
     config={"app_name": "ToDo list service API",}
 )
 app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+
+
+@app.route("/")
+def index():
+    return redirect(url_for('webapp.todo.todo_list'))
 
 
 global_init()
