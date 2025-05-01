@@ -40,3 +40,7 @@
     list-style-type: none;
 }
 
+.todo-li-DONE {
+    background: rgba(130, 243, 106, 0.15);
+}
+

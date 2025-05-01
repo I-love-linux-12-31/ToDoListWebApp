@@ -8,7 +8,7 @@
         {% set is_readonly = not task["writable"] %}
         {% set is_today_deadline = (task["deadline"] and task["deadline"].date() == current_date.date()) %}
 
-        <li class="{% if is_today_deadline %}bg-warning{% endif %} todo-li" style="padding: 5px 0 5px 5px;margin-bottom: 5px; border-radius: 5px;">
+        <li class="{% if is_today_deadline and (task.get("status", "default") != "DONE") %}bg-warning{% endif %} todo-li todo-li-{{ task.get("status", "default") }}" style="padding: 5px 0 5px 5px;margin-bottom: 5px; border-radius: 5px;">
             <div class="d-flex justify-content-between align-items-center">
                 <div style="width: 80%;">
                     {% if not is_readonly %}
@@ -63,7 +63,9 @@
                             {% if is_readonly %}
                                 <span title="Read Only">🔒</span>
                             {% endif %}
+                            - {{  task["status"].capitalize() }}
                         </span>
+                        <p>{{task["description"]}}</p>
                     {% endif %}
                 </div>
 
@@ -89,7 +91,7 @@
     {% endmacro %}
 
     <a href="{{ url_for('webapp.todo.add_root_task') }}" class="btn btn-sm btn-success">Add new task</a>
-    <br>
+    <br style="margin-bottom: 16px;">
 
     <ul class="todo-ul">
         {% for task in tasks %}
