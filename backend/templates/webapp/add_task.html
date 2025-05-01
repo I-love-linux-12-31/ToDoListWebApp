@@ -1,24 +1,28 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Add Subtask under "{{ parent_task.title }}"</h2>
+    <div class="container mt-5">
+        {% if parent_task %}
+            <h2>Add Subtask for "{{ parent_task.title }}"</h2>
+        {% else %}
+            <h2>Add a new task</h2>
+        {% endif %}
 
-    <form method="post">
-        <div class="mb-3">
-            <label class="form-label">Title</label>
-            <input type="text" name="title" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea name="description" class="form-control" rows="3"></textarea>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Deadline (optional)</label>
-            <input type="datetime-local" name="deadline" class="form-control">
-        </div>
-        <button type="submit" class="btn btn-success">Add Task</button>
-        <a href="{{ url_for('webapp.todo.todo_list') }}" class="btn btn-secondary">Cancel</a>
-    </form>
-</div>
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Deadline (optional)</label>
+                <input type="datetime-local" name="deadline" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Add Task</button>
+            <a href="{{ url_for('webapp.todo.todo_list') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
 {% endblock %}

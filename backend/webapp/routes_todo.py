@@ -123,6 +123,44 @@ def add_task(parent_id):
     return render_template('webapp/add_task.html', parent_task=parent_task)
 
 
+
+@bp_todo.route("/add/", methods=["GET", "POST"])
+def add_root_task():
+    if "user_id" not in session:
+        flash('Please login first.', 'warning')
+        return redirect(url_for('webapp.auth.login'))
+
+    session_db = create_session()
+    user = session_db.query(User).get(session['user_id'])
+
+    if request.method == "POST":
+        title = request.form['title']
+        description = request.form['description']
+        deadline = request.form.get('deadline')
+
+        new_task = Task()
+        new_task.title = title
+        new_task.description = description
+        new_task.creation_date = datetime.now()
+        new_task.parent = None
+        new_task.owner_id = user.id
+        new_task.status = "PENDING"
+
+        if deadline:
+            try:
+                new_task.deadline = datetime.fromisoformat(deadline)
+            except ValueError:
+                flash('Invalid deadline format. Ignored.', 'warning')
+
+        session_db.add(new_task)
+        session_db.commit()
+
+        flash('Task created successfully!', 'success')
+        return redirect(url_for('webapp.todo.todo_list'))
+
+    return render_template('webapp/add_task.html', parent_task=None)
+
+
 @bp_todo.route("/delete/<int:task_id>", methods=["GET", "POST"])
 def delete_task(task_id):
     if "user_id" not in session:

@@ -88,6 +88,9 @@
         </li>
     {% endmacro %}
 
+    <a href="{{ url_for('webapp.todo.add_root_task') }}" class="btn btn-sm btn-success">Add new task</a>
+    <br>
+
     <ul class="todo-ul">
         {% for task in tasks %}
             {{ render_task(task) }}
