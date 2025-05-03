@@ -14,6 +14,20 @@ Available databases:
 * MariaDB
 * PostgreSQL
 
+## How to run
+
+### Superfast
+
+1. Download docker-compose configuration
+2. Download example .env file
+3. Launch docker-compose
+ 
+```bash
+wget https://raw.githubusercontent.com/I-love-linux-12-31/ToDoListWebApp/refs/heads/main/docs/docker-compose-fast-deploy.yaml -O docker-compose.yaml
+wget https://raw.githubusercontent.com/I-love-linux-12-31/ToDoListWebApp/refs/heads/main/example.env -O .env
+docker-compose up
+```
+
 ## Project structure
 
 ### Modules
