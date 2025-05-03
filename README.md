@@ -12,7 +12,7 @@ Course work on the subject "Client-Server Application Development"
 Available databases:
 * sqlite 
 * MariaDB
-* PostgreSQL
+* PostgreSQL (used as default in containerized version)
 
 ## How to run
 
@@ -20,7 +20,7 @@ Available databases:
 
 1. Download docker-compose configuration
 2. Download example .env file
-3. Launch docker-compose
+3. Launch docker-compose (If first launch, wait 15-30 seconds and restart backend container or all)
  
 ```bash
 wget https://raw.githubusercontent.com/I-love-linux-12-31/ToDoListWebApp/refs/heads/main/docs/docker-compose-fast-deploy.yaml -O docker-compose.yaml
@@ -50,28 +50,59 @@ docker-compose up
 │   ├── app.py
 │   ├── db.py
 │   ├── decorators.py
+│   ├── Dockerfile
+│   ├── forms
+│   │   ├── __init__.py
+│   │   └── token_create.py
 │   ├── ORM
 │   │   ├── __all_models.py
 │   │   ├── authtokens.py
+│   │   ├── __init__.py
 │   │   ├── tasks.py
 │   │   └── users.py
+│   ├── pyproject.toml
 │   ├── requirements.txt
+│   ├── run_server.sh
 │   ├── static
+│   │   ├── main.css
 │   │   └── openapi.yaml
 │   ├── tasks
 │   │   ├── __init__.py
 │   │   └── tasks_list.py
 │   ├── templates
+│   │   ├── base.html
+│   │   └── webapp
+│   │       ├── add_task.html
+│   │       ├── login.html
+│   │       ├── profile.html
+│   │       ├── register.html
+│   │       ├── share_task.html
+│   │       ├── todo.html
+│   │       └── token.html
 │   ├── utils
 │   │   ├── add_user.py
 │   │   └── common.py
 │   ├── utils_cmd.py
+│   ├── uWSGI.ini
 │   └── webapp
-│       └── __init__.py
+│       ├── __init__.py
+│       ├── routes_auth.py
+│       ├── routes_profile.py
+│       ├── routes_todo.py
+│       └── routes_token.py
 ├── DEMO_AUTH.md
+├── docker-compose.yml
+├── docs
+│   ├── docker-compose-fast-deploy.yaml
+│   ├── openapi.yaml -> ../backend/static/openapi.yaml
+│   └── README_RU.md
+├── example.env
 ├── LICENSE
-├── README.md
-└── README_RU.md
+├── nginx
+│   ├── 00-to-do-list.conf
+│   └── Dockerfile
+└── README.md
+
 
 ```
 ## Documentation
