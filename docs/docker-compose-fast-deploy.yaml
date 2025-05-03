@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 volumes:
   pg_data:
@@ -13,7 +13,7 @@ services:
     networks:
       - app_network
   backend:
-    image: yaroslavk1231/todo_web_app_backend
+    image: yaroslavk1231/todo_web_app_backend:latest
     env_file: .env
     depends_on:
       - db
@@ -22,7 +22,7 @@ services:
     networks:
       - app_network
   gateway:
-    image: yaroslavk1231/todo_web_app_gateway
+    image: yaroslavk1231/todo_web_app_gateway:latest
     env_file: .env
     ports:
       - "8080:80"
