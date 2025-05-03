@@ -68,6 +68,26 @@ OpenAPI docs:
 
 ## About app
 
+### Web pages
+
+#### API
+
+* OpenAPI docs
+* Api tokens management
+
+#### Account management:
+
+* Login
+* Registration
+* Profile management
+
+#### To-do list
+
+* Main page
+* Add task page
+* Share task page
+
+
 ### Models
 
 #### 1. Tasks

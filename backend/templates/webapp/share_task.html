@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Share Task: "{{ task.title }}"</h2>
+
+    <form method="post">
+
+        <label>
+            <div>Share Access politic id:</div>
+            <input type="number" name="access_level" list="access_levels" max="{128" min="-128" value="" required="required" class="form-control" />
+
+            <datalist id="access_levels">
+                <option value="128">Private: 128</option>
+                <option value="127">Read for all: 127</option>
+                <option value="2">Read for this and nearest children: 2</option>
+                <option value="1">Read-only: 1</option>
+
+                <option value="-127">Read and write for all: -127</option>
+                <option value="-2">Read and write for this and nearest children: -2</option>
+                <option value="-1">Read and write: -1</option>
+
+            </datalist>
+        </label>
+
+        <button type="submit" class="btn btn-primary">Share</button>
+        <a href="{{ url_for('webapp.todo.todo_list') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

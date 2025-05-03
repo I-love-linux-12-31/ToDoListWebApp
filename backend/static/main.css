@@ -1,0 +1,46 @@
+#token-creation-form {
+    display: block grid;
+    margin: 8px;
+    padding: 16px;
+    background: rgba(160, 160, 160, 0.49);
+    border-radius: 16px;
+}
+#token-creation-form label{
+    display: flex;
+    margin: 8px;
+/*    align-content: center;
+    align-items: center;
+    text-align: center;*/
+}
+
+#token-creation-form label div{
+    display: inline-block;
+    width: 15%;
+}
+
+#token-creation-form label input{
+    display: inline-block;
+    min-width: 200px;
+    width: 82%;
+}
+
+#token-creation-form button {
+    max-width: 256px;
+}
+
+.todo-li {
+    background: rgba(211, 211, 211, 0.35);
+    border-radius: 8px;
+    border: solid lightgray 1px;
+    border-left: solid darkgray 6px;
+}
+
+.todo-ul {
+    padding-left: 8px;
+    list-style-type: none;
+}
+
+.todo-li-DONE {
+    background: rgba(130, 243, 106, 0.15);
+}
+

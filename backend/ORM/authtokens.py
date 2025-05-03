@@ -44,6 +44,7 @@ class TokensAccessLevels(enum.Enum):
                 return 3
             case TokensAccessLevels.EVERYTHING_ADMIN:
                 return 4
+        return None
 
     def __gt__(self, other):
         return self.id_by_level(self) > other.id_by_level(other)

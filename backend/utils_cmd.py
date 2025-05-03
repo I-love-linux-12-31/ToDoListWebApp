@@ -1,3 +1,4 @@
+#!/bin/env python3
 import os
 from utils.add_user import add_user
 

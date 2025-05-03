@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Profile {{ '(Admin View)' if is_admin else '' }}</h2>
+    {% if is_admin %}
+        <div class="alert alert-info">Is admin user</div>
+    {% endif %}
+
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ user.email or '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">New Password (leave blank to keep current)</label>
+            <input type="password" name="password" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+{% endblock %}
