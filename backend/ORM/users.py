@@ -5,7 +5,7 @@ from flask_login import UserMixin
 from db import SqlAlchemyBase
 
 class User(SqlAlchemyBase, UserMixin):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
     username = Column(VARCHAR(64), unique=True)

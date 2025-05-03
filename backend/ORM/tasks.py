@@ -85,7 +85,8 @@ class TaskShareLevel(enum.Enum):
     # @staticmethod
     # def is_in(instance, iterable):
     #     for item in iterable:
-    #         if isinstance(item, TaskShareLevel) and TaskShareLevel.level2int(item) == TaskShareLevel.level2int(instance):
+    #         if isinstance(item, TaskShareLevel) and
+    #         TaskShareLevel.level2int(item) == TaskShareLevel.level2int(instance):
     #             return True
     #     return False
 
@@ -102,15 +103,15 @@ READABLE_POLITICS = [
 ] + WRITABLE_POLITICS
 
 
-TABLE_ID = Sequence('table_id_seq', start=1000)
+TABLE_ID = Sequence("table_id_seq", start=1000)
 
 class Task(SqlAlchemyBase):
-    __tablename__ = 'tasks'
+    __tablename__ = "tasks"
 
     id = Column(Integer, TABLE_ID, primary_key=True, server_default=TABLE_ID.next_value())
     # id = Column(Integer, primary_key=True, autoincrement="ignore_fk")
-    owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    parent = Column(ForeignKey('tasks.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=True, default=None)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    parent = Column(ForeignKey("tasks.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=True, default=None)
     title = Column(VARCHAR(128), nullable=False)
     description = Column(VARCHAR(512), nullable=True, default=None)
     status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.NONE)
