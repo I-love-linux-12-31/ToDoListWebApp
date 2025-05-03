@@ -7,7 +7,7 @@ from .routes_profile import bp_profile
 from .routes_token import bp_token
 from .routes_todo import bp_todo
 
-bp = Blueprint('webapp', __name__, url_prefix=F"{os.environ.get('URL_PREFIX', '')}/")
+bp = Blueprint("webapp", __name__, url_prefix=F"{os.environ.get('URL_PREFIX', '')}/")
 
 bp.register_blueprint(bp_auth)
 
