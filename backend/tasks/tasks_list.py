@@ -14,7 +14,7 @@ def get_user_tasks(
     filter_search: str = None,
     short_response: bool = True,
 
-) -> int or [{str: Any, }, ]:
+) -> int or [{str: Any}]:
     """
 Function to search user's tasks
     :param user_id: ID of request sender
@@ -39,8 +39,13 @@ Function to search user's tasks
         # q2 = session.query(Task).filter(Task.access_politics <= TaskShareLevel.RW_ONLY_1_LEVELS)
         q2 = session.query(Task).filter(Task.access_politics.in_(WRITABLE_POLITICS))
     else:
-        # q2 = session.query(Task).filter((Task.access_politics <= TaskShareLevel.RW_ONLY_1_LEVELS) | (Task.access_politics >= TaskShareLevel.R_ONLY_1_LEVELS))
-        q2 = session.query(Task).filter(Task.access_politics.notin_([TaskShareLevel.PARENT_SELECT, TaskShareLevel.PRIVATE]))
+        # q2 = session.query(Task).filter(
+        # (Task.access_politics <= TaskShareLevel.RW_ONLY_1_LEVELS) |
+        # (Task.access_politics >= TaskShareLevel.R_ONLY_1_LEVELS)
+        # )
+        q2 = session.query(Task).filter(
+            Task.access_politics.notin_([TaskShareLevel.PARENT_SELECT, TaskShareLevel.PRIVATE]),
+        )
 
     query = q1.union(q2)
 
@@ -50,9 +55,9 @@ Function to search user's tasks
     if filter_search:
         query = query.filter(
             or_(
-                Task.title.ilike(f'%{filter_search}%'),
-                Task.description.ilike(f'%{filter_search}%')
-            )
+                Task.title.ilike(f"%{filter_search}%"),
+                Task.description.ilike(f"%{filter_search}%"),
+            ),
         )
 
     # if write_permission_required:
@@ -82,7 +87,7 @@ Function to search user's tasks
             Task.creation_date,
             Task.deadline,
             Task.access_politics,
-            Task.owner_id
+            Task.owner_id,
         )
 
     # if filter_user is not None:
