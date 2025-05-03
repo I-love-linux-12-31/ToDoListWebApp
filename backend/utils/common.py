@@ -5,9 +5,9 @@ def ask_boolean_question(question, __another_try=False) -> bool:
         print("Incorrect input. Choose Y or N.")
     print(question, "Y/N? ")
     response = input().upper()
-    if response == 'Y' or response == 'YES':
+    if response == "Y" or response == "YES":
         return True
-    elif response == 'N' or response == 'NO':
+    elif response == "N" or response == "NO":
         return False
     return ask_boolean_question(question, __another_try=True)
 
