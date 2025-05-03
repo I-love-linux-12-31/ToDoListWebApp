@@ -7,9 +7,8 @@ def help_dialog():
     text = """
     Available commands:
  exit - exit the program
- help - show this message    
+ help - show this message
  add_user - add a new user
-    
     """
     print(text)
 
@@ -30,7 +29,7 @@ def main():
     print("Goodbye!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from db import global_init
     if os.environ.get("DOTENV", False):
         from dotenv import load_dotenv
