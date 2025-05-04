@@ -32,9 +32,11 @@ def create_token(session=None, **kwargs):
     session = session or create_session()
     user = session.query(User).filter_by(username=username).first()
     if not user or not check_password_hash(user.password_hash, password):
+        session.close()
         return Response("Access denied!", 403)
 
     if access_level == TokensAccessLevels.EVERYTHING_ADMIN and not user.is_admin:
+        session.close()
         return Response("Access denied!", 403)
     token = AuthToken()
     token.id = hashlib.blake2s(
@@ -63,6 +65,8 @@ def revoke_token(session=None, token_status:TokensAccessLevels=None, **kwargs):
     username = request_data.get("username", None)
     token = request_data.get("token", None)
     if token is None:
+        if session:
+            session.close()
         return Response("Bad request!, token in request body is missing", 400)
     token = token.split()[1]
     if session is None:
@@ -70,6 +74,7 @@ def revoke_token(session=None, token_status:TokensAccessLevels=None, **kwargs):
 
     user_obj = session.query(User).filter_by(username=username).first()
     if user_obj is None:
+        session.close()
         return Response("Access denied!", 403)
     token_obj: AuthToken = session.query(AuthToken).filter_by(id=token, user_id=user_obj.id).first()
     session.delete(token_obj)
