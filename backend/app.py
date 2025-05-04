@@ -55,8 +55,8 @@ else:
     )
 
 # Ensure CSRF token is generated and available
-app.config['WTF_CSRF_ENABLED'] = True
-app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour
+app.config["WTF_CSRF_ENABLED"] = True
+app.config["WTF_CSRF_TIME_LIMIT"] = 3600  # 1 hour
 
 # CSRF configuration
 csrf = CSRFProtect()  # Initialize without binding to app yet
@@ -127,7 +127,7 @@ if os.environ.get("FLASK_ENV") == "testing":
             "csrf_enabled": app.config.get("WTF_CSRF_ENABLED", False),
             "csrf_exempt_routes": [r.rule for r in app.url_map.iter_rules() if r.rule.startswith(f"{URL_PREFIX}/api/")],
             "url_prefix": URL_PREFIX,
-            "api_routes_count": len([r for r in app.url_map.iter_rules() if r.rule.startswith(f"{URL_PREFIX}/api/")])
+            "api_routes_count": len([r for r in app.url_map.iter_rules() if r.rule.startswith(f"{URL_PREFIX}/api/")]),
         })
 
 global_init()

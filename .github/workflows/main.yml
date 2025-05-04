@@ -100,13 +100,6 @@ jobs:
       - build_gateway_and_push_to_docker_hub
     if: always()
     steps:
-      - name: Send success message
-        if: success()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: "✅ All workflow tasks done successfully in repo ${{ github.repository }} by ${{ github.actor }}'s commit.'"
       - name: Send failure message
         if: failure()
         uses: appleboy/telegram-action@master
@@ -118,3 +111,11 @@ jobs:
             ${{ github.repository }} by: ${{ github.actor }}
             Commit: ${{ github.sha }}
             See more: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Send success message
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: "✅ All workflow tasks done successfully in repo ${{ github.repository }} by ${{ github.actor }}'s commit.'"
+
