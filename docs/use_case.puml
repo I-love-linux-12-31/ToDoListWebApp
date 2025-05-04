@@ -1,0 +1,49 @@
+@startuml
+left to right direction
+actor "User" as U
+actor "Admin" as A
+
+usecase "Register" as UC1
+usecase "Login" as UC2
+usecase "Add Task" as UC3
+usecase "View Tasks" as UC4
+usecase "Edit/Delete Task" as UC5
+usecase "Request API Token" as UC6
+usecase "Access API with Token" as UC7
+usecase "Manage Users" as UC8
+
+U -left-> UC1
+U -left-> UC2
+U -left-> UC3
+U -left-> UC4
+U -left-> UC5
+U -left-> UC6
+U -left-> UC7
+
+A -right[#red]-> UC1
+A -right[#red]-> UC2
+A -right[#red]-> UC3
+A -right[#red]-> UC4
+A -right[#red]-> UC5
+A -right[#red]-> UC6
+A -right[#red]-> UC7
+A -right[#red]-> UC8
+
+together {
+  usecase "Register" as UC1
+  usecase "Login" as UC2
+}
+
+together {
+  usecase "Add Task" as UC3
+  usecase "View Tasks" as UC4
+  usecase "Edit/Delete Task" as UC5
+}
+
+together {
+  usecase "Request API Token" as UC6
+  usecase "Access API with Token" as UC7
+}
+
+
+@enduml
