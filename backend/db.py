@@ -25,7 +25,7 @@ def global_init():
             conn_str += f"?charset=utf8mb4&"
     print(f"Connecting to DB: {conn_str}".replace(os.environ.get("DB_PASSWORD", "Password_123"), "<PASSWORD>"))
 
-    engine = sa.create_engine(conn_str, echo=False)
+    engine = sa.create_engine(conn_str, echo=False, connect_args={'connect_timeout': 60}, pool_size=10, max_overflow=20)
     __factory = orm.sessionmaker(bind=engine)
     from ORM import __all_models
 

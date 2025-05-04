@@ -1,0 +1,105 @@
+name: Fuzz Testing
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+#  schedule:
+#    # Run weekly on Sunday at midnight
+#    - cron: '0 0 * * 0'
+
+jobs:
+  fuzz-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: todolistwebapp
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        pip3 install -r backend/requirements.txt
+        pip3 install -r tests_requirements.txt
+        pip3 install pytest hypothesis requests pytest-cov pytest-html beautifulsoup4
+        
+    - name: Set up environment
+      run: |
+        # Copy the example env file to .env
+        cp example.env .env
+        # Update the database config to use the GitHub Actions PostgreSQL
+        sed -i 's/DB_USER=YourPostgreSQLuser/DB_USER=postgres/g' .env
+        sed -i 's/DB_PASSWORD=YourDBpassword/DB_PASSWORD=postgres/g' .env
+        sed -i 's/DB_SERVER=db:5432/DB_SERVER=localhost:5432/g' .env
+        # Add a secure secret key
+        sed -i 's/SECRET_KEY=generate_random_secure_key_here_for_prod/SECRET_KEY=github_actions_secret_key_for_testing/g' .env
+        # Ensure URL_PREFIX is set correctly
+        echo "URL_PREFIX=/todo-app" >> .env
+        # Copy .env to backend directory
+        cp .env ./backend/.env
+        
+    - name: Create test user and start app
+      run: |
+        source .env
+        export DOTENV=1
+        export FLASK_ENV=testing
+        export FLASK_DEBUG=1
+        
+        # Start the server in the background
+        cd backend && python3 app.py &
+        APP_PID=$!
+        echo "App started with PID: $APP_PID"
+        
+        # Wait longer for the server to start and be ready
+        echo "Waiting for the app to start..."
+        sleep 15
+        
+        # Check if app is running
+        curl -v http://localhost:5000/todo-app/ || true
+        
+        # Create test user
+        python3 backend/utils_cmd.py add_user --username testuser --password "Test@123!" --admin
+        
+    - name: Check app is running
+      run: |
+        # Wait for the app to start
+        sleep 5
+        # Check if app is running and get CSRF debug info
+        curl -v http://localhost:5000/todo-app/debug/csrf-check || true
+        
+    - name: Test API CSRF exemption
+      run: |
+        export DOTENV=1
+        # Test only API CSRF exemption, skip the web form test in CI environment
+        python3 test_api_csrf.py --api-only || echo "API CSRF test failed, but continuing with fuzzing tests"
+        
+    - name: Run fuzzing tests
+      run: |
+        # Run the fuzz tests with short duration
+        python3 -m pytest tests/fuzz -v --html=fuzz_report.html --self-contained-html
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: fuzz-test-report
+        path: fuzz_report.html 

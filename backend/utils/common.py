@@ -17,4 +17,4 @@ def ask_new_password() -> str:
     if confirm != passwd:
         print("Passwords do not match.")
         return ask_new_password()
-    return generate_password_hash(passwd)
+    return passwd

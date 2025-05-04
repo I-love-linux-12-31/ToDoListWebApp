@@ -33,6 +33,7 @@ def get_task(id, session=None, token_status=None, user_id=None, **kwargs):
 
     task = session.query(Task).filter_by(id=id).first()
     if not task:
+        session.close()
         return Response("Task not found", 404)
 
     # Check permission
@@ -46,10 +47,12 @@ def get_task(id, session=None, token_status=None, user_id=None, **kwargs):
             TaskShareLevel.RW_ONLY_1_LEVELS,
             TaskShareLevel.RW_ONLY_2_LEVELS,
         ]:
+            session.close()
             return Response("Access denied", 403)
     elif token_status != TokensAccessLevels.EVERYTHING_ADMIN and task.owner_id != user_id:
         # Non-admin user trying to access another user's private task
         if task.access_politics == TaskShareLevel.PRIVATE:
+            session.close()
             return Response("Access denied", 403)
 
     task_data = {
@@ -63,7 +66,7 @@ def get_task(id, session=None, token_status=None, user_id=None, **kwargs):
         "creation_date": task.creation_date.isoformat(),
         "deadline": task.deadline.isoformat() if task.deadline else None,
     }
-
+    session.close()
     return jsonify(task_data)
 
 
@@ -72,6 +75,8 @@ def get_task(id, session=None, token_status=None, user_id=None, **kwargs):
 def create_task(session=None, token_status=None, user_id=None, **kwargs):
     """Create a new task"""
     if token_status is None or token_status < TokensAccessLevels.READ_CREATE:
+        if session:
+            session.close()
         return Response("Access denied - insufficient permissions", 403)
 
     if session is None:
@@ -79,6 +84,7 @@ def create_task(session=None, token_status=None, user_id=None, **kwargs):
 
     data = request.get_json()
     if not data or "title" not in data:
+        session.close()
         return Response("Missing required fields", 400)
 
     task = Task()
@@ -103,6 +109,7 @@ def create_task(session=None, token_status=None, user_id=None, **kwargs):
         try:
             task.deadline = datetime.fromisoformat(data.get("deadline"))
         except ValueError:
+            session.close()
             return Response("Invalid date format for deadline", 400)
 
     session.add(task)
@@ -119,7 +126,7 @@ def create_task(session=None, token_status=None, user_id=None, **kwargs):
         "creation_date": task.creation_date.isoformat(),
         "deadline": task.deadline.isoformat() if task.deadline else None,
     }
-
+    session.close()
     return jsonify(task_data), 201
 
 
@@ -128,6 +135,8 @@ def create_task(session=None, token_status=None, user_id=None, **kwargs):
 def update_task(id, session=None, token_status=None, user_id=None, **kwargs):
     """Update a task"""
     if token_status is None:
+        if session:
+            session.close()
         return Response("Authentication required", 401)
 
     if session is None:
@@ -135,6 +144,7 @@ def update_task(id, session=None, token_status=None, user_id=None, **kwargs):
 
     task = session.query(Task).filter_by(id=id).first()
     if not task:
+        session.close()
         return Response("Task not found", 404)
 
     # Check permission
@@ -145,10 +155,12 @@ def update_task(id, session=None, token_status=None, user_id=None, **kwargs):
             TaskShareLevel.RW_ONLY_1_LEVELS,
             TaskShareLevel.RW_ONLY_2_LEVELS,
         ]:
+            session.close()
             return Response("Access denied", 403)
 
     data = request.get_json()
     if not data:
+        session.close()
         return Response("No data provided", 400)
 
     # Update fields
@@ -173,6 +185,7 @@ def update_task(id, session=None, token_status=None, user_id=None, **kwargs):
         try:
             task.deadline = datetime.fromisoformat(data.get("deadline"))
         except ValueError:
+            session.close()
             return Response("Invalid date format for deadline", 400)
 
     session.commit()
@@ -188,7 +201,7 @@ def update_task(id, session=None, token_status=None, user_id=None, **kwargs):
         "creation_date": task.creation_date.isoformat(),
         "deadline": task.deadline.isoformat() if task.deadline else None,
     }
-
+    session.close()
     return jsonify(task_data)
 
 
@@ -204,13 +217,15 @@ def delete_task(id, session=None, token_status=None, user_id=None, **kwargs):
 
     task = session.query(Task).filter_by(id=id).first()
     if not task:
+        session.close()
         return Response("Task not found", 404)
 
     # Check permission
     if token_status != TokensAccessLevels.EVERYTHING_ADMIN and task.owner_id != user_id:
+        session.close()
         return Response("Access denied", 403)
 
     session.delete(task)
     session.commit()
-
+    session.close()
     return Response("", 204)

@@ -22,20 +22,23 @@ def get_users(token_status=None, user_id=None, session=None, **kwargs):
         users_data = [{"id": user.id, "username": user.username, "email": user.email,
                       "created_at": user.created_at.isoformat(), "is_admin": user.is_admin}
                      for user in users]
+        session.close()
         return jsonify(users_data)
 
     # Regular user can only see their own data
     user = session.query(User).filter_by(id=user_id).first()
     if not user:
+        session.close()
         return Response("User not found", 404)
-
-    return jsonify({
+    res = jsonify({
         "id": user.id,
         "username": user.username,
         "email": user.email,
         "created_at": user.created_at.isoformat(),
         "is_admin": user.is_admin,
     })
+    session.close()
+    return res
 
 
 @bp.route("/users/<int:id>", methods=["GET"])
@@ -47,19 +50,22 @@ def get_user(id, token_status=None, user_id=None, session=None, **kwargs):
 
     # Regular users can only see their own data
     if token_status != TokensAccessLevels.EVERYTHING_ADMIN and id != user_id:
+        session.close()
         return Response("Access denied", 403)
 
     user = session.query(User).filter_by(id=id).first()
     if not user:
+        session.close()
         return Response("User not found", 404)
-
-    return jsonify({
+    res = jsonify({
         "id": user.id,
         "username": user.username,
         "email": user.email,
         "created_at": user.created_at.isoformat(),
         "is_admin": user.is_admin,
     })
+    session.close()
+    return res
 
 
 @bp.route("/users", methods=["POST"])
@@ -67,6 +73,8 @@ def get_user(id, token_status=None, user_id=None, session=None, **kwargs):
 def create_user(token_status=None, user_id=None, session=None, **kwargs):
     """Create a new user - only admins can create users through API"""
     if token_status != TokensAccessLevels.EVERYTHING_ADMIN:
+        if session:
+            session.close()
         return Response("Access denied", 403)
 
     if session is None:
@@ -74,12 +82,15 @@ def create_user(token_status=None, user_id=None, session=None, **kwargs):
 
     data = request.get_json()
     if not data or not all(k in data for k in ("username", "email", "password")):
+        session.close()
         return Response("Missing required fields", 400)
 
     # Check if username or email already exists
     if session.query(User).filter_by(username=data["username"]).first():
+        session.close()
         return Response("Username already exists", 400)
     if session.query(User).filter_by(email=data["email"]).first():
+        session.close()
         return Response("Email already exists", 400)
 
     # Create new user
@@ -91,14 +102,15 @@ def create_user(token_status=None, user_id=None, session=None, **kwargs):
 
     session.add(user)
     session.commit()
-
-    return jsonify({
+    res = jsonify({
         "id": user.id,
         "username": user.username,
         "email": user.email,
         "created_at": user.created_at.isoformat(),
         "is_admin": user.is_admin,
     }), 201
+    session.close()
+    return res
 
 
 @bp.route("/users/<int:id>", methods=["PUT"])
@@ -106,6 +118,8 @@ def create_user(token_status=None, user_id=None, session=None, **kwargs):
 def update_user(id, token_status=None, user_id=None, session=None, **kwargs):
     """Update user - users can update only their own data, admins can update any user"""
     if token_status != TokensAccessLevels.EVERYTHING_ADMIN and id != user_id:
+        if session:
+            session.close()
         return Response("Access denied", 403)
 
     if session is None:
@@ -113,22 +127,26 @@ def update_user(id, token_status=None, user_id=None, session=None, **kwargs):
 
     user = session.query(User).filter_by(id=id).first()
     if not user:
+        session.close()
         return Response("User not found", 404)
 
     data = request.get_json()
     if not data:
+        session.close()
         return Response("No data provided", 400)
 
     # Update fields
     if "username" in data:
         existing = session.query(User).filter_by(username=data["username"]).first()
         if existing and existing.id != id:
+            session.close()
             return Response("Username already exists", 400)
         user.username = data["username"]
 
     if "email" in data:
         existing = session.query(User).filter_by(email=data["email"]).first()
         if existing and existing.id != id:
+            session.close()
             return Response("Email already exists", 400)
         user.email = data["email"]
 
@@ -140,14 +158,15 @@ def update_user(id, token_status=None, user_id=None, session=None, **kwargs):
         user.is_admin = data["is_admin"]
 
     session.commit()
-
-    return jsonify({
+    res = jsonify({
         "id": user.id,
         "username": user.username,
         "email": user.email,
         "created_at": user.created_at.isoformat(),
         "is_admin": user.is_admin,
     })
+    session.close()
+    return res
 
 
 @bp.route("/users/<int:id>", methods=["DELETE"])
@@ -155,6 +174,8 @@ def update_user(id, token_status=None, user_id=None, session=None, **kwargs):
 def delete_user(id, token_status=None, user_id=None, session=None, **kwargs):
     """Delete user - only admins can delete users"""
     if token_status != TokensAccessLevels.EVERYTHING_ADMIN:
+        if session:
+            session.close()
         return Response("Access denied", 403)
 
     if session is None:
@@ -162,9 +183,10 @@ def delete_user(id, token_status=None, user_id=None, session=None, **kwargs):
 
     user = session.query(User).filter_by(id=id).first()
     if not user:
+        session.close()
         return Response("User not found", 404)
 
     session.delete(user)
     session.commit()
-
+    session.close()
     return Response("", 204)
