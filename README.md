@@ -7,6 +7,8 @@ Course work on the subject "Client-Server Application Development"
 * Python3
 * Flask
   * Flask-login
+  * flask-imiter 
+  * flask-wtf
 * SQLAlchemy
 
 Available databases:
