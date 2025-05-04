@@ -1,0 +1,80 @@
+name: Fuzz Testing
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+#  schedule:
+#    # Run weekly on Sunday at midnight
+#    - cron: '0 0 * * 0'
+
+jobs:
+  fuzz-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: todolistwebapp
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+        
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        pip3 install -r backend/requirements.txt
+        pip3 install -r tests_requirements.txt
+        pip3 install pytest hypothesis requests pytest-cov pytest-html beautifulsoup4
+        
+    - name: Set up environment
+      run: |
+        # Copy the example env file to .env
+        cp example.env .env
+        # Update the database config to use the GitHub Actions PostgreSQL
+        sed -i 's/DB_USER=YourPostgreSQLuser/DB_USER=postgres/g' .env
+        sed -i 's/DB_PASSWORD=YourDBpassword/DB_PASSWORD=postgres/g' .env
+        sed -i 's/DB_SERVER=db:5432/DB_SERVER=localhost:5432/g' .env
+        # Add a secure secret key
+        sed -i 's/SECRET_KEY=generate_random_secure_key_here_for_prod/SECRET_KEY=github_actions_secret_key_for_testing/g' .env
+        
+    - name: Create test user
+      run: |
+        # Start the server in the background
+        cd backend && python3 app.py &
+        # Wait for the server to start
+        sleep 10
+        # Create test user
+        cd .. && python3 backend/utils_cmd.py add_user --username testuser --password "Test@123!" --admin
+        
+    - name: Test API CSRF exemption
+      run: |
+        # Test that the API is properly exempted from CSRF
+        python3 test_api_csrf.py
+        
+    - name: Run fuzzing tests
+      run: |
+        # Run the fuzz tests with short duration
+        python3 -m pytest tests/fuzz -v --html=fuzz_report.html --self-contained-html
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: fuzz-test-report
+        path: fuzz_report.html 
