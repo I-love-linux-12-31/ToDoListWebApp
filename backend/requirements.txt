@@ -1,6 +1,6 @@
 Flask
 flask-login
-flask-imiter
+flask_limiter
 flask-wtf
 flask_swagger_ui
 SQLAlchemy
