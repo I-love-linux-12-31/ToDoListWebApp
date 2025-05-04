@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h1 class="mb-0">500 - Server Error</h1>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <p class="mb-0"><i class="fas fa-exclamation-circle"></i> Something went wrong on our end.</p>
+                    </div>
+                    <p>The server encountered an internal error and was unable to complete your request. Please try again later.</p>
+                    <p>If the problem persists, please contact the administrator.</p>
+                    <hr>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

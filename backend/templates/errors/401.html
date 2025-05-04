@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h1 class="mb-0">401 - Unauthorized</h1>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <p class="mb-0"><i class="fas fa-exclamation-triangle"></i> You need to authenticate to access this page.</p>
+                    </div>
+                    <p>You don't have the necessary permissions to view this page. Please log in or use a valid authentication token.</p>
+                    <hr>
+                    <a href="{{ url_for('webapp.auth.login') }}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

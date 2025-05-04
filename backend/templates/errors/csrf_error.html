@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h1 class="mb-0">Security Error - CSRF Protection</h1>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <p class="mb-0"><i class="fas fa-shield-alt"></i> CSRF Validation Failed</p>
+                    </div>
+                    <p>Your form submission failed our security validation. This could happen for several reasons:</p>
+                    <ul>
+                        <li>Your session may have expired</li>
+                        <li>You may have submitted an outdated form</li>
+                        <li>There might be a potential cross-site request forgery attempt</li>
+                    </ul>
+                    <p>Please try again by refreshing the page and resubmitting the form.</p>
+                    <hr>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
