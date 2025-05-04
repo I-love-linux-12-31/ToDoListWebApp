@@ -8,9 +8,9 @@ def parse_args(args):
     result = {}
     i = 0
     while i < len(args):
-        if args[i].startswith('--'):
+        if args[i].startswith("--"):
             key = args[i][2:]
-            if i + 1 < len(args) and not args[i + 1].startswith('--'):
+            if i + 1 < len(args) and not args[i + 1].startswith("--"):
                 value = args[i + 1]
                 i += 1
             else:
@@ -59,7 +59,10 @@ def main():
 
 if __name__ == "__main__":
     if sys.version_info[1] >= 13: # 3.13 +
-        print("Warning! Non interactive script may not work in this python version(especially in free-thread mode and 3.14)")
+        print(
+            "Warning! Non interactive script may not work in this python version"
+            "(especially in free-thread mode and 3.14)",
+        )
     from db import global_init
     if os.environ.get("DOTENV", False):
         from dotenv import load_dotenv
