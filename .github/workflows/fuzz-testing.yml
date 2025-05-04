@@ -63,6 +63,7 @@ jobs:
         # Wait for the server to start
         sleep 10
         # Create test user
+        ls -lah
         python3 utils_cmd.py add_user --username testuser --password "Test@123!" --admin
         
     - name: Test API CSRF exemption
