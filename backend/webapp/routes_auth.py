@@ -1,11 +1,23 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, get_flashed_messages
 # from flask_login import login_user, logout_user, login_required, current_user
+import logging
 from db import create_session
 from ORM import User
 from werkzeug.security import generate_password_hash, check_password_hash
 
 bp_auth = Blueprint("auth", __name__, url_prefix="/auth")
+logger = logging.getLogger(__name__)
 
+def validate_password(password):
+    if len(password) < 8:
+        return False
+    if not any(c.isdigit() for c in password):
+        return False
+    # if not any(c.isupper() for c in password):
+    #     return False
+    if not any(c in "!@#$%^&*()_-+=<>,.?/:;{}[]|\\" for c in password):
+        return False
+    return True
 
 @bp_auth.route("/register", methods=["GET", "POST"])
 def register():
@@ -14,6 +26,9 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
 
+        if not validate_password(password):
+            flash("Create more complex password", "warning")
+            return render_template("webapp/register.html")
         if session_db.query(User).filter_by(username=username).first():
             flash("Username already exists", "danger")
             return redirect(url_for("webapp.auth.register"))
@@ -41,6 +56,7 @@ def login():
 
         session["user_id"] = user.id
         session["is_admin"] = user.is_admin
+        logger.info("Web Auth passed (login): %s", session["user_id"])
         flash("Logged in successfully", "success")
         return redirect(url_for("webapp.todo.todo_list"))
 

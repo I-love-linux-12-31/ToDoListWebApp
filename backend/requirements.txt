@@ -1,9 +1,10 @@
 Flask
 flask-login
+flask-imiter
+flask_swagger_ui
 SQLAlchemy
 PyYAML
 user-agents
 Werkzeug
 dotenv
-flask_swagger_ui
 psycopg2

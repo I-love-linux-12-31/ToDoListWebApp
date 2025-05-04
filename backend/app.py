@@ -1,5 +1,6 @@
 import os
 import hashlib
+import logging
 from flask_swagger_ui import get_swaggerui_blueprint
 
 if os.environ.get("DOTENV", False):
@@ -18,7 +19,7 @@ from webapp import bp as webapp_bp
 URL_PREFIX = os.environ.get("URL_PREFIX", "")
 
 app = Flask(__name__, static_url_path=F"{URL_PREFIX}/static")
-app.secret_key = hashlib.sha256(os.urandom(24)).hexdigest()
+app.secret_key = os.environ.get("SECRET_KEY", hashlib.sha256(os.urandom(24)).hexdigest())
 
 app.register_blueprint(api_bp)
 
@@ -42,6 +43,10 @@ def index():
 
 
 global_init()
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 if __name__ == "__main__":
     session = create_session()

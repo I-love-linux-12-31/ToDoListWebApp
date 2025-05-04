@@ -1,7 +1,10 @@
 import hashlib
 import random
 from datetime import datetime, timedelta, UTC
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, current_app
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import create_session
@@ -12,7 +15,11 @@ from ORM.authtokens import AuthToken, TokensAccessLevels
 
 bp = Blueprint("auth", __name__)
 
+
+limiter = Limiter(get_remote_address, app=current_app)
+
 @bp.route("/token/create", methods=["POST"])
+@limiter.limit("5 per minute")
 @token_auth(allow_anonymous=True)
 def create_token(session=None, **kwargs):
     request_data = request.get_json()
