@@ -1,6 +1,7 @@
 Flask
 flask-login
 flask-imiter
+flask-wtf
 flask_swagger_ui
 SQLAlchemy
 PyYAML
