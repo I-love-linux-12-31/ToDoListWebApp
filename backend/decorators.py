@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from ORM.authtokens import TokensAccessLevels, AuthToken
@@ -5,6 +6,8 @@ from flask import request, Response
 import functools
 
 from db import create_session
+
+logger = logging.getLogger(__name__)
 
 def token_auth(allow_anonymous=False):
     def decorator(func, *args, **kwargs):
@@ -18,7 +21,8 @@ def token_auth(allow_anonymous=False):
             if not allow_anonymous and not token:
                 return Response("Unauthorized", 401)
             if token is None:
-                print("[DBG] Auth passed (anonymous)")
+                # print("[DBG] Auth passed (anonymous)")
+                logger.debug("Auth passed: %s", token)
                 return func(*args2, token_status=None, **kwargs2)
             split = token.split(" ")
             if len(split) != 2:
@@ -33,7 +37,7 @@ def token_auth(allow_anonymous=False):
                 # print(token)
                 token: AuthToken = session.query(AuthToken).get(token)
                 if token and token.valid_until >= datetime.now():
-                    print("[DBG] Auth passed:", token)
+                    logger.info("Auth passed: %s", token)
                     token_status = token.access_level
                     user_id = token.user_id
                 else:

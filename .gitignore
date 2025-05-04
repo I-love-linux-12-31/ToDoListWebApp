@@ -4,6 +4,8 @@
 
 .env
 
+__pycache__
+
 # fix for jetbrains autocomplete
 /db.py
 /ORM

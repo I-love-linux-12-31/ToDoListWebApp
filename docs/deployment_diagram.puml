@@ -1,0 +1,25 @@
+@startuml
+node "Client" {
+  node "Web-browwser"
+  node "API client application"
+}
+
+node "Server Host" {
+    node "Docker Engine" {
+        node "nginx (reverse proxy)" {
+            component "Static Files"
+        }
+
+        node "backend (Flask app)" {
+            component "Web UI"
+            component "REST API"
+        }
+
+        database "PostgreSQL\n(or MariaDB/SQLite)" as db
+    }
+}
+
+[backend (Flask app)] --- db: ORM (SQLAlchemy)
+[nginx (reverse proxy)] --- [backend (Flask app)]: HTTP/HTTPS
+[Client] --- [nginx (reverse proxy)]: HTTP/HTTPS
+@enduml
