@@ -1,3 +1,4 @@
+import sys
 import os
 import hashlib
 import logging
@@ -9,7 +10,7 @@ if os.environ.get("DOTENV", False):
     load_dotenv()
 
 
-from flask import Flask, get_flashed_messages, redirect, url_for, render_template
+from flask import Flask, get_flashed_messages, redirect, url_for, render_template, request
 from db import global_init, create_session
 
 from decorators import token_auth
@@ -31,14 +32,12 @@ if os.environ.get("FLASK_ENV") != "development":
         PERMANENT_SESSION_LIFETIME=7200,  # 120 minutes in seconds
     )
 
-# Initialize CSRF protection
-csrf = CSRFProtect(app)
-# Exempt the API routes from CSRF protection
-csrf.exempt(api_bp)
+# CSRF configuration
+csrf = CSRFProtect()  # Initialize without binding to app yet
 
+# Register blueprints
 app.register_blueprint(api_bp)
 app.register_blueprint(webapp_bp)
-
 
 SWAGGER_URL = F"{URL_PREFIX}/api/v1/docs"
 API_URL = F"{URL_PREFIX}/static/openapi.yaml"
@@ -50,6 +49,20 @@ swaggerui_blueprint = get_swaggerui_blueprint(
 )
 app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
+# Create API view endpoints array for manual exemption - make sure this comes AFTER api_bp registration
+api_views = []
+for rule in app.url_map.iter_rules():
+    if rule.rule.startswith(f"{URL_PREFIX}/api/"):
+        api_views.append(app.view_functions[rule.endpoint])
+
+# Now initialize CSRF with app and exempt API endpoints
+csrf.init_app(app)
+# Exempt individual API view functions
+for view in api_views:
+    csrf.exempt(view)
+# Also exempt blueprints
+csrf.exempt(api_bp)
+csrf.exempt(swaggerui_blueprint)
 
 @app.route(F"{URL_PREFIX}/")
 def index():
