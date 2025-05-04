@@ -52,9 +52,11 @@ jobs:
         sed -i 's/DB_SERVER=db:5432/DB_SERVER=localhost:5432/g' .env
         # Add a secure secret key
         sed -i 's/SECRET_KEY=generate_random_secure_key_here_for_prod/SECRET_KEY=github_actions_secret_key_for_testing/g' .env
+        cp .env ./backend/.env
         
     - name: Create test user
       run: |
+        source .env
         # Start the server in the background
         cd backend && python3 app.py &
         # Wait for the server to start
