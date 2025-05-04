@@ -23,7 +23,7 @@ def global_init():
         conn_str = f'{os.environ.get("DB_TYPE", "mariadb+pymysql")}://{os.environ.get("DB_USER", "user")}:{os.environ.get("DB_PASSWORD", "Password_123")}@{os.environ.get("DB_SERVER", "127.0.0.1")}/{os.environ.get("DB", "ToDoListWebApp")}' # check_same_thread=False&
         if os.environ.get("DB_TYPE", "mariadb+pymysql") == "mariadb+pymysql":
             conn_str += f"?charset=utf8mb4&"
-    print(f"Connecting to DB: {conn_str}")
+    print(f"Connecting to DB: {conn_str}".replace(os.environ.get("DB_PASSWORD", "Password_123"), "<PASSWORD>"))
 
     engine = sa.create_engine(conn_str, echo=False)
     __factory = orm.sessionmaker(bind=engine)
