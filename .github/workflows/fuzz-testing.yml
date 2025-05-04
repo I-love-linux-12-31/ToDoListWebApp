@@ -57,6 +57,7 @@ jobs:
     - name: Create test user
       run: |
         source .env
+        export DOTENV=1
         # Start the server in the background
         cd backend && python3 app.py &
         # Wait for the server to start
