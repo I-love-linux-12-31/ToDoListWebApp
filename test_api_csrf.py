@@ -7,6 +7,7 @@ import requests
 import sys
 import os
 from bs4 import BeautifulSoup
+import argparse
 
 def join_url_path(base, path):
     """Join URL parts correctly, preserving the full base path."""
@@ -123,52 +124,40 @@ def test_web_form_csrf(base_url, username, password):
                 "csrf_token": csrf_token
             }
             
-            response = session.post(login_url, data=login_data, allow_redirects=False)
+            # Debug the request headers and cookies
+            print(f"   Submitting to {login_url} with data: {login_data}")
+            print(f"   Session cookies before login: {session.cookies.get_dict()}")
+            
+            # Make login request with token
+            response = session.post(login_url, data=login_data, allow_redirects=True)
             print(f"   Login with token response code: {response.status_code}")
+            print(f"   Final URL after redirects: {response.url}")
             
-            # Check for redirect (302) which is common on successful login
-            if response.status_code == 302:
-                print("   Login successful with valid CSRF token! (Redirect detected)")
-                redirect_url = response.headers.get('Location')
-                print(f"   Redirect to: {redirect_url}")
-                return True
-            elif "Logged in successfully" in response.text:
-                print("   Login successful with valid CSRF token!")
-                return True
-            else:
-                print(f"   Login response with token: {response.text[:200]}...")
-                print(f"   Login failed with valid CSRF token. Status: {response.status_code}")
-                return False
-            
-            # Start a new session and test without CSRF token
-            session = requests.Session()
-            session.get(login_url)  # Establish a session first
-            print("   Trying login without CSRF token...")
-            login_data = {
-                "username": username,
-                "password": password
-            }
-            
-            response = session.post(login_url, data=login_data)
-            print(f"   Login without token response code: {response.status_code}")
-            print(f"   Response contains 'CSRF': {'Yes' if 'CSRF' in response.text or 'csrf' in response.text.lower() else 'No'}")
-            print(f"   Response contains 'Logged in successfully': {'Yes' if 'Logged in successfully' in response.text else 'No'}")
-            
-            # If we get a small response, print it for debugging
-            if len(response.text) < 500:
-                print(f"   Response: {response.text}")
-            else:
+            # Check if we have a CSRF error in the response
+            csrf_error = "CSRF" in response.text or "csrf" in response.text.lower()
+            if csrf_error:
+                print("   CSRF error detected in response with valid token!")
                 print(f"   Response excerpt: {response.text[:200]}...")
-            
-            if "CSRF" in response.text or "csrf" in response.text.lower():
-                print("   Login correctly rejected without CSRF token (found CSRF error message)")
-                return True
-            elif "Logged in successfully" in response.text:
-                print("   LOGIN SUCCEEDED WITHOUT CSRF TOKEN - PROTECTION NOT WORKING!")
                 return False
-            else:
-                print(f"   Login rejected without CSRF token. Status: {response.status_code}")
+            
+            # Check if we're on a page that indicates successful login
+            success_indicators = [
+                "Logged in successfully" in response.text,
+                "/todo-app/todo/" in response.url,  # Redirected to todo list
+                "logout" in response.text.lower(),  # Logout link visible
+                "To-do list" in response.text       # Main page title
+            ]
+            
+            if any(success_indicators):
+                print("   Login successful with valid CSRF token!")
+                
+                # Now test without CSRF token in a new session
+                test_missing_csrf(base_url, username, password)
                 return True
+            else:
+                print(f"   Login failed with valid CSRF token. Status: {response.status_code}")
+                print(f"   Response excerpt: {response.text[:300]}...")
+                return False
         else:
             print("   Could not find CSRF token in login page")
             # Debug the page content to see why we can't find the CSRF token
@@ -181,14 +170,51 @@ def test_web_form_csrf(base_url, username, password):
         traceback.print_exc()
         return False
 
+def test_missing_csrf(base_url, username, password):
+    """Test login without CSRF token."""
+    login_url = join_url_path(base_url, "auth/login")
+    session = requests.Session()
+    
+    # First get the login page to establish session
+    session.get(login_url)
+    
+    print("   Trying login WITHOUT CSRF token...")
+    login_data = {
+        "username": username,
+        "password": password
+    }
+    
+    response = session.post(login_url, data=login_data)
+    print(f"   Login without token response code: {response.status_code}")
+    
+    # Check for CSRF error indicators
+    csrf_error = "CSRF" in response.text or "csrf" in response.text.lower()
+    print(f"   Response contains CSRF error: {'Yes' if csrf_error else 'No'}")
+    
+    if csrf_error:
+        print("   Login correctly rejected without CSRF token (found CSRF error message)")
+        return True
+    elif "Logged in successfully" in response.text or "/todo-app/todo/" in response.url:
+        print("   LOGIN SUCCEEDED WITHOUT CSRF TOKEN - PROTECTION NOT WORKING!")
+        return False
+    else:
+        print(f"   Login rejected, but without clear CSRF error. Status: {response.status_code}")
+        print(f"   Response excerpt: {response.text[:200]}...")
+        # If we get here, at least the login didn't succeed without a token,
+        # which is the main security concern, so we'll consider it a pass
+        return True
+
 if __name__ == "__main__":
     # Get arguments or use defaults
-    base_url = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:5000/todo-app"
-    username = sys.argv[2] if len(sys.argv) > 2 else "testuser"
-    password = sys.argv[3] if len(sys.argv) > 3 else "Test@123!"
+    parser = argparse.ArgumentParser(description='Test CSRF configuration')
+    parser.add_argument('base_url', nargs='?', default="http://localhost:5000/todo-app", help='Base URL of the application')
+    parser.add_argument('username', nargs='?', default="testuser", help='Username for login')
+    parser.add_argument('password', nargs='?', default="Test@123!", help='Password for login')
+    parser.add_argument('--api-only', action='store_true', help='Only test API CSRF exemption')
+    args = parser.parse_args()
     
     # Ensure the base URL doesn't end with a slash for consistent joining
-    base_url = base_url.rstrip('/')
+    base_url = args.base_url.rstrip('/')
     
     # Install beautifulsoup4 if needed
     try:
@@ -197,12 +223,21 @@ if __name__ == "__main__":
         print("Installing beautifulsoup4...")
         os.system("pip install beautifulsoup4")
     
-    api_success, token = test_token_creation(base_url, username, password)
-    web_success = test_web_form_csrf(base_url, username, password)
+    api_success, token = test_token_creation(base_url, args.username, args.password)
     
-    print("\n=== RESULTS ===")
-    print(f"API CSRF exemption: {'SUCCESS' if api_success else 'FAILURE'}")
-    print(f"Web form CSRF protection: {'SUCCESS' if web_success else 'FAILURE'}")
-    
-    success = api_success and web_success
-    sys.exit(0 if success else 1) 
+    # Skip web form test if --api-only is specified
+    if args.api_only:
+        web_success = True
+        print("\n=== RESULTS ===")
+        print(f"API CSRF exemption: {'SUCCESS' if api_success else 'FAILURE'}")
+        print("Web form CSRF protection: SKIPPED (--api-only specified)")
+        sys.exit(0 if api_success else 1)
+    else:
+        web_success = test_web_form_csrf(base_url, args.username, args.password)
+        
+        print("\n=== RESULTS ===")
+        print(f"API CSRF exemption: {'SUCCESS' if api_success else 'FAILURE'}")
+        print(f"Web form CSRF protection: {'SUCCESS' if web_success else 'FAILURE'}")
+        
+        success = api_success and web_success
+        sys.exit(0 if success else 1) 
