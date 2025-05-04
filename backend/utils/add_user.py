@@ -2,6 +2,7 @@ from datetime import datetime, UTC
 
 from ORM.users import User
 from db import create_session
+from werkzeug.security import generate_password_hash
 
 from .common import ask_new_password, ask_boolean_question
 
@@ -19,7 +20,7 @@ def add_user_not_interactive(username, password, email=None, is_admin=False, cre
             user.email = email
             user.created_at = created_at
             user.is_admin = is_admin
-            user.password_hash = password
+            user.password_hash = generate_password_hash(password)
             session.add(user)
             session.commit()
             return True
