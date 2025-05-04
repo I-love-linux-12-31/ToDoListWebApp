@@ -31,6 +31,18 @@ if os.environ.get("FLASK_ENV") != "development":
         SESSION_COOKIE_SAMESITE="Lax",
         PERMANENT_SESSION_LIFETIME=7200,  # 120 minutes in seconds
     )
+else:
+    # For testing/development environments
+    app.config.update(
+        SESSION_COOKIE_SECURE=False,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE=None,
+        PERMANENT_SESSION_LIFETIME=7200,  # 120 minutes in seconds
+    )
+
+# Ensure CSRF token is generated and available
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour
 
 # CSRF configuration
 csrf = CSRFProtect()  # Initialize without binding to app yet

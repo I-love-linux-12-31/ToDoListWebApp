@@ -35,9 +35,18 @@ echo "Using API URL: $TOKEN_URL"
 
 # Verify CSRF configuration
 echo "Verifying CSRF configuration..."
-python test_api_csrf.py "$BASE_URL" "$TEST_USERNAME" "$TEST_PASSWORD"
-if [ $? -ne 0 ]; then
+python3 test_api_csrf.py "$BASE_URL" "$TEST_USERNAME" "$TEST_PASSWORD"
+CSRF_TEST_RESULT=$?
+
+if [ $CSRF_TEST_RESULT -ne 0 ]; then
     echo "CSRF configuration verification failed. Please check the API CSRF exemption and web form CSRF protection."
+    echo "Environment information:"
+    echo "BASE_URL: $BASE_URL"
+    echo "URL_PREFIX: $URL_PREFIX"
+    # Try to get the CSRF token manually for debugging
+    echo "Attempting to get CSRF token manually..."
+    curl -v "$BASE_URL/auth/login" | grep csrf
+    echo "END OF DEBUG INFO"
     exit 1
 fi
 

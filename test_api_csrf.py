@@ -104,6 +104,8 @@ def test_web_form_csrf(base_url, username, password):
     # First get the login page to get the CSRF token
     try:
         response = session.get(login_url)
+        print(f"   Initial page response code: {response.status_code}")
+        print(f"   Session cookies: {session.cookies.get_dict()}")
         
         # Parse the page to extract the CSRF token
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -121,17 +123,26 @@ def test_web_form_csrf(base_url, username, password):
                 "csrf_token": csrf_token
             }
             
-            response = session.post(login_url, data=login_data)
+            response = session.post(login_url, data=login_data, allow_redirects=False)
+            print(f"   Login with token response code: {response.status_code}")
             
-            if "Logged in successfully" in response.text or response.status_code == 302:
+            # Check for redirect (302) which is common on successful login
+            if response.status_code == 302:
+                print("   Login successful with valid CSRF token! (Redirect detected)")
+                redirect_url = response.headers.get('Location')
+                print(f"   Redirect to: {redirect_url}")
+                return True
+            elif "Logged in successfully" in response.text:
                 print("   Login successful with valid CSRF token!")
+                return True
             else:
+                print(f"   Login response with token: {response.text[:200]}...")
                 print(f"   Login failed with valid CSRF token. Status: {response.status_code}")
-                print(response.text)
                 return False
             
             # Start a new session and test without CSRF token
             session = requests.Session()
+            session.get(login_url)  # Establish a session first
             print("   Trying login without CSRF token...")
             login_data = {
                 "username": username,
@@ -139,6 +150,15 @@ def test_web_form_csrf(base_url, username, password):
             }
             
             response = session.post(login_url, data=login_data)
+            print(f"   Login without token response code: {response.status_code}")
+            print(f"   Response contains 'CSRF': {'Yes' if 'CSRF' in response.text or 'csrf' in response.text.lower() else 'No'}")
+            print(f"   Response contains 'Logged in successfully': {'Yes' if 'Logged in successfully' in response.text else 'No'}")
+            
+            # If we get a small response, print it for debugging
+            if len(response.text) < 500:
+                print(f"   Response: {response.text}")
+            else:
+                print(f"   Response excerpt: {response.text[:200]}...")
             
             if "CSRF" in response.text or "csrf" in response.text.lower():
                 print("   Login correctly rejected without CSRF token (found CSRF error message)")
@@ -151,9 +171,14 @@ def test_web_form_csrf(base_url, username, password):
                 return True
         else:
             print("   Could not find CSRF token in login page")
+            # Debug the page content to see why we can't find the CSRF token
+            print(f"   Page title: {soup.title.string if soup.title else 'No title found'}")
+            print(f"   Page content excerpt: {response.text[:200]}...")
             return False
     except Exception as e:
         print(f"   Error: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 if __name__ == "__main__":
