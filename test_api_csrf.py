@@ -127,6 +127,7 @@ def test_web_form_csrf(base_url, username, password):
                 print("   Login successful with valid CSRF token!")
             else:
                 print(f"   Login failed with valid CSRF token. Status: {response.status_code}")
+                print(response.text)
                 return False
             
             # Start a new session and test without CSRF token
