@@ -43,6 +43,11 @@
                                   <option {% if task["status"] == "CANCELLED" %}selected{% endif %}>Canceled</option>
                                 </select>
 
+                                {% if task["deadline"] %}
+                                    <label class="form-label" style="display: inline-block; height: 100%; margin-left: 16px;">
+                                        <input name="deadline" type="datetime-local" class="form-control" value="{{ task["deadline"] }}" placeholder="Deadline">
+                                    </label>
+                                {% endif %}
                                 <button type="submit" class="btn btn-primary" style="height: 100%; margin-left: 16px;">Save</button>
                             </div>
 
@@ -64,6 +69,11 @@
                                 <span title="Read Only">🔒</span>
                             {% endif %}
                             - {{  task["status"].capitalize() }}
+                            {% if task["deadline"] %}
+                                <label class="form-label" style="display: inline-block; height: 100%; margin-left: 16px;" disabled="">
+                                    <input name="deadline" type="datetime-local" class="form-control" value="{{ task["deadline"] }}" disabled>
+                                </label>
+                            {% endif %}
                         </span>
                         <p>{{task["description"]}}</p>
                     {% endif %}
