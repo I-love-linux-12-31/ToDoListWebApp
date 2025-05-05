@@ -10,7 +10,7 @@ if os.environ.get("DOTENV", False):
     load_dotenv()
 
 
-from flask import Flask, get_flashed_messages, redirect, url_for, render_template, request, jsonify
+from flask import Flask, get_flashed_messages, redirect, url_for, render_template, request
 from db import global_init, create_session
 
 from decorators import token_auth
@@ -23,40 +23,14 @@ URL_PREFIX = os.environ.get("URL_PREFIX", "")
 app = Flask(__name__, static_url_path=F"{URL_PREFIX}/static")
 app.secret_key = os.environ.get("SECRET_KEY", hashlib.sha256(os.urandom(24)).hexdigest())
 
-# Special configuration for testing environment
-if os.environ.get("FLASK_ENV") == "testing":
-    app.config.update(
-        # Don't use secure cookies for testing environment
-        SESSION_COOKIE_SECURE=False,
-        SESSION_COOKIE_HTTPONLY=True,
-        # Allow testing from GitHub Actions
-        SESSION_COOKIE_SAMESITE=None,
-        # Make sure CSRF is enabled but properly configure it for testing
-        WTF_CSRF_ENABLED=True,
-        WTF_CSRF_TIME_LIMIT=3600,
-        # Debug mode
-        DEBUG=True,
-    )
-    print("Running in TESTING mode with specialized CSRF configuration")
-elif os.environ.get("FLASK_ENV") != "development":
+# Configure secure cookies for production
+if os.environ.get("FLASK_ENV") != "development":
     app.config.update(
         SESSION_COOKIE_SECURE=True,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         PERMANENT_SESSION_LIFETIME=7200,  # 120 minutes in seconds
     )
-else:
-    # For development environments
-    app.config.update(
-        SESSION_COOKIE_SECURE=False,
-        SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SAMESITE=None,
-        PERMANENT_SESSION_LIFETIME=7200,  # 120 minutes in seconds
-    )
-
-# Ensure CSRF token is generated and available
-app.config["WTF_CSRF_ENABLED"] = True
-app.config["WTF_CSRF_TIME_LIMIT"] = 3600  # 1 hour
 
 # CSRF configuration
 csrf = CSRFProtect()  # Initialize without binding to app yet
@@ -118,17 +92,6 @@ def handle_csrf_error(e):
     logging.warning(f"CSRF error: {e.description}")
     return render_template("errors/csrf_error.html"), 400
 
-# Special debug route for CI testing - only enabled in testing environment
-if os.environ.get("FLASK_ENV") == "testing":
-    @app.route(F"{URL_PREFIX}/debug/csrf-check")
-    def csrf_debug():
-        """Debug route for CSRF testing in CI environment."""
-        return jsonify({
-            "csrf_enabled": app.config.get("WTF_CSRF_ENABLED", False),
-            "csrf_exempt_routes": [r.rule for r in app.url_map.iter_rules() if r.rule.startswith(f"{URL_PREFIX}/api/")],
-            "url_prefix": URL_PREFIX,
-            "api_routes_count": len([r for r in app.url_map.iter_rules() if r.rule.startswith(f"{URL_PREFIX}/api/")]),
-        })
 
 global_init()
 logging.basicConfig(
