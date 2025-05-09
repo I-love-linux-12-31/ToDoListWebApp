@@ -11,10 +11,10 @@ document.addEventListener('DOMContentLoaded', function() {
     window.fetch = function(url, options) {
         options = options || {};
         options.headers = options.headers || {};
+        options.credentials = options.credentials || 'include'; // Ensure cookies are sent with request
         
-        // Only add the CSRF token to same-origin requests
-        const sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
-        if (sameOrigin && !options.headers['X-CSRFToken']) {
+        // Add CSRF token to all requests, not just same-origin
+        if (!options.headers['X-CSRFToken']) {
             options.headers['X-CSRFToken'] = csrfToken;
         }
         
@@ -27,10 +27,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const xhrInstance = this;
         originalXhrOpen.apply(this, arguments);
         
+        // Add the CSRF token to all non-GET requests
         const method = arguments[0].toUpperCase();
         if (method !== 'GET' && method !== 'HEAD') {
             xhrInstance.setRequestHeader('X-CSRFToken', csrfToken);
         }
+        
+        // Set withCredentials to true to include cookies in cross-domain requests
+        xhrInstance.withCredentials = true;
     };
     
     // Add CSRF token to all forms on the page
