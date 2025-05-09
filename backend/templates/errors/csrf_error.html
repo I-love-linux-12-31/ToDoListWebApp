@@ -20,9 +20,17 @@
                     </ul>
                     <p>Please try again by refreshing the page and resubmitting the form.</p>
                     <hr>
-                    <a href="{{ url_for('index') }}" class="btn btn-primary">
-                        <i class="fas fa-home"></i> Back to Home
-                    </a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                        <a href="{{ url_for('debug_session') }}" class="btn btn-warning">
+                            Reset Session
+                        </a>
+                        <a href="{{ url_for('webapp.auth.login') }}" class="btn btn-success">
+                            Back to Login
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
