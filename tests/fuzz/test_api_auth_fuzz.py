@@ -154,7 +154,8 @@ def auth_token_value(request):
             token = response.json()["id"]
             request.module.auth_token_value = token
             return token
-    except:
+    except Exception as e:
+        print(e)
         pass
     return None
 

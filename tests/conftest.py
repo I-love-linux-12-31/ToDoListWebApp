@@ -59,7 +59,8 @@ def auth_token(app_config, api_url):
             error_msg = f"Failed to get auth token: {response.status_code}"
             try:
                 error_msg += f" - {response.text}"
-            except:
+            except Exception as e:
+                print(e)
                 pass
             print(f"Error: {error_msg}")
             pytest.skip(error_msg)
@@ -97,5 +98,6 @@ def create_task(api_url, auth_headers):
         try:
             delete_url = join_url_path(api_url, f"tasks/{task_id}")
             requests.delete(delete_url, headers=auth_headers)
-        except:
+        except Exception as e:
+            print(e)
             pass  # Ignore cleanup failures 
