@@ -45,22 +45,25 @@ def register():
 @bp_auth.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        session_db = create_session()
-        username = request.form["username"]
-        password = request.form["password"]
-        user = session_db.query(User).filter_by(username=username).first()
-
-        if not user or not check_password_hash(user.password_hash, password):
-            flash("Invalid username or password", "danger")
-            return redirect(url_for("webapp.auth.login"))
-
-        session["user_id"] = user.id
-        session["is_admin"] = user.is_admin
-        logger.info("Web Auth passed (login): %s", session["user_id"])
-        flash("Logged in successfully", "success")
-        return redirect(url_for("webapp.todo.todo_list"))
-
+        return process_login(request)
     return render_template("webapp/login.html")
+
+def process_login(request):
+    """Process login request, can be called directly if CSRF fails in development"""
+    session_db = create_session()
+    username = request.form["username"]
+    password = request.form["password"]
+    user = session_db.query(User).filter_by(username=username).first()
+
+    if not user or not check_password_hash(user.password_hash, password):
+        flash("Invalid username or password", "danger")
+        return redirect(url_for("webapp.auth.login"))
+
+    session["user_id"] = user.id
+    session["is_admin"] = user.is_admin
+    logger.info("Web Auth passed (login): %s", session["user_id"])
+    flash("Logged in successfully", "success")
+    return redirect(url_for("webapp.todo.todo_list"))
 
 
 @bp_auth.route("/logout")
@@ -68,3 +71,8 @@ def logout():
     session.clear()
     flash("Logged out successfully.", "info")
     return redirect(url_for("webapp.auth.login"))
+
+@bp_auth.route("/test_csrf")
+def test_csrf():
+    """Test page for CSRF functionality"""
+    return render_template("webapp/test_csrf.html")
