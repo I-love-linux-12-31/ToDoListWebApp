@@ -25,21 +25,31 @@ app = Flask(__name__, static_url_path=F"{URL_PREFIX}/static")
 app.secret_key = os.environ.get("SECRET_KEY", hashlib.sha256(os.urandom(24)).hexdigest())
 
 # Enable CORS for all routes
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}}, allow_headers=["Content-Type", "Authorization", "X-CSRFToken", "X-CSRF-Token"])
+CORS(
+    app,
+    supports_credentials=True,
+    resources={r"/*": {"origins": "*"}},
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "X-CSRFToken",
+        "X-CSRF-Token",
+    ],
+)
 
 # Set CSRF headers
-app.config['WTF_CSRF_HEADERS'] = ['X-CSRFToken', 'X-CSRF-Token']
-app.config['WTF_CSRF_ENABLED'] = True
-app.config['WTF_CSRF_HOST_CHECK'] = False  # Disable host check for CSRF validation
+app.config["WTF_CSRF_HEADERS"] = ["X-CSRFToken", "X-CSRF-Token"]
+app.config["WTF_CSRF_ENABLED"] = True
+app.config["WTF_CSRF_HOST_CHECK"] = False  # Disable host check for CSRF validation
 
 # Configure session cookies to work across different IPs
-app.config['SESSION_COOKIE_SECURE'] = False  # Allow cookies on non-HTTPS connections
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = None  # Allow cross-site cookies
-app.config['SESSION_COOKIE_DOMAIN'] = None  # Allow cookies for any domain
-app.config['PERMANENT_SESSION_LIFETIME'] = 7200  # 120 minutes in seconds
-app.config['WTF_CSRF_SSL_STRICT'] = False  # Allow CSRF protection on non-HTTPS connections
-app.config['WTF_CSRF_TIME_LIMIT'] = 7200  # Set CSRF token timeout to 2 hours
+app.config["SESSION_COOKIE_SECURE"] = False  # Allow cookies on non-HTTPS connections
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = None  # Allow cross-site cookies
+app.config["SESSION_COOKIE_DOMAIN"] = None  # Allow cookies for any domain
+app.config["PERMANENT_SESSION_LIFETIME"] = 7200  # 120 minutes in seconds
+app.config["WTF_CSRF_SSL_STRICT"] = False  # Allow CSRF protection on non-HTTPS connections
+app.config["WTF_CSRF_TIME_LIMIT"] = 7200  # Set CSRF token timeout to 2 hours
 
 # CSRF configuration
 csrf = CSRFProtect(app)  # Initialize with app directly
@@ -81,32 +91,32 @@ def index():
 @app.route(F"{URL_PREFIX}/debug/session", methods=["GET"])
 def debug_session():
     """Debug route to check session handling"""
-    
+
     # Set a test value in session
-    session['test_value'] = 'Session is working'
-    
+    session["test_value"] = "Session is working"
+
     # Return current session data
     return jsonify({
-        'session_data': dict(session),
-        'cookies': dict(request.cookies),
-        'csrf_token': csrf._get_csrf_token(),
-        'headers': dict(request.headers)
+        "session_data": dict(session),
+        "cookies": dict(request.cookies),
+        "csrf_token": csrf._get_csrf_token(),
+        "headers": dict(request.headers),
     })
 
 @app.route(F"{URL_PREFIX}/debug/csrf", methods=["GET"])
 def debug_csrf():
     """Debug route to reset CSRF protection"""
     from flask import jsonify
-    
+
     # Generate and set a new CSRF token
     csrf_token = csrf._get_csrf_token()
-    
+
     # Return current token
     return jsonify({
-        'new_csrf_token': csrf_token,
-        'session_csrf_token': session.get('csrf_token', None),
-        'session_data': dict(session),
-        'cookies': dict(request.cookies)
+        "new_csrf_token": csrf_token,
+        "session_csrf_token": session.get("csrf_token", None),
+        "session_data": dict(session),
+        "cookies": dict(request.cookies),
     })
 
 # Error handlers
@@ -135,19 +145,19 @@ def handle_csrf_error(e):
     logging.warning(f"Request host: {request.host}")
     logging.warning(f"Request headers: {dict(request.headers)}")
     logging.warning(f"Request cookies: {request.cookies}")
-    
+
     # In development mode, allow bypassing CSRF
     if os.environ.get("FLASK_ENV") == "development":
         # Generate a new CSRF token
         csrf_token = csrf._get_csrf_token()
         # Set it in the session
-        session['csrf_token'] = csrf_token
-        
-        # If this was a login attempt, try to process it 
+        session["csrf_token"] = csrf_token
+
+        # If this was a login attempt, try to process it
         if request.path == f"{URL_PREFIX}/auth/login" and request.method == "POST":
             from webapp.routes_auth import process_login
             return process_login(request)
-            
+
     return render_template("errors/csrf_error.html"), 400
 
 

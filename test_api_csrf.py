@@ -218,7 +218,7 @@ if __name__ == "__main__":
     
     # Install beautifulsoup4 if needed
     try:
-        import bs4
+        import bs4  # noqa: F401
     except ImportError:
         print("Installing beautifulsoup4...")
         os.system("pip install beautifulsoup4")
