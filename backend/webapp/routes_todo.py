@@ -48,6 +48,12 @@ def todo_list():
                 description = form["description"]
                 status = form["status"].upper()
                 title = form["title"]
+                deadline = form.get("deadline", None)
+                try:
+                    deadline = datetime.fromisoformat(deadline)
+                except Exception as e:
+                    print(e)
+                    deadline = None
                 is_data_valid = True
             except Exception as e:
                 print(e)
@@ -55,10 +61,12 @@ def todo_list():
             if is_data_valid:
                 task = session_db.query(Task).get(task_id)
                 task: Task
-                if task.owner_id == user.id or task.writable():
+                if task.owner_id == user.id or task.writable:
                     task.title = title
                     task.description = description
                     task.status = status
+                    if deadline is not None:
+                        task.deadline = deadline
                     try:
                         session_db.add(task)
                         session_db.commit()
