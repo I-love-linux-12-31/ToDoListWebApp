@@ -153,11 +153,6 @@ def handle_csrf_error(e):
         # Set it in the session
         session["csrf_token"] = csrf_token
 
-        # If this was a login attempt, try to process it
-        if request.path == f"{URL_PREFIX}/auth/login" and request.method == "POST":
-            from webapp.routes_auth import process_login
-            return process_login(request)
-
     return render_template("errors/csrf_error.html"), 400
 
 
