@@ -10,6 +10,14 @@
 
     <link href="/todo-app/static/main.css" rel="stylesheet">
 
+    {% if RYBBIT_SCRIPT %}
+        <script
+            src="{{ RYBBIT_SCRIPT }}"
+            data-site-id="{{ RYBBIT_SITE_ID }}"
+            defer
+        ></script>
+    {% endif %}
+
 </head>
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
