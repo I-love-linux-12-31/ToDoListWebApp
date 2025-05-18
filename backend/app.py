@@ -156,6 +156,14 @@ def handle_csrf_error(e):
     return render_template("errors/csrf_error.html"), 400
 
 
+@app.context_processor
+def analytics_env__vars():
+    return dict(
+        RYBBIT_SCRIPT=os.environ.get("RYBBIT_SCRIPT", False),
+        RYBBIT_SITE_ID=os.environ.get("RYBBIT_SITE_ID", False),
+                )
+
+
 global_init()
 logging.basicConfig(
     level=logging.INFO,
